@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Superb — Plans and pricing</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:#f8fafc;color:#0f172a;min-height:100vh}
+nav{display:flex;align-items:center;justify-content:space-between;padding:1.25rem 2rem;background:white;border-bottom:1px solid #e2e8f0}
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none}
+.logo-mark{width:32px;height:32px;border-radius:8px;background:#dcfce7;display:flex;align-items:center;justify-content:center;font-size:17px}
+.logo-text{font-size:16px;font-weight:600;color:#0f172a}
+.nav-link{font-size:13px;color:#16a34a;text-decoration:none;font-weight:500}
+.main{max-width:900px;margin:0 auto;padding:3rem 1.5rem}
+.page-title{font-size:26px;font-weight:600;margin-bottom:6px;text-align:center}
+.page-sub{font-size:14px;color:#64748b;text-align:center;margin-bottom:1.5rem}
+.trial-badge{display:inline-flex;align-items:center;gap:6px;background:#dcfce7;color:#16a34a;font-size:13px;font-weight:500;padding:6px 14px;border-radius:20px;margin-bottom:1.5rem}
+.plan-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-bottom:2.5rem}
+.plan-card{border:2px solid #e2e8f0;border-radius:14px;padding:1.25rem;background:white;position:relative}
+.plan-card.featured{border-color:#16a34a}
+.plan-popular{position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:#16a34a;color:white;font-size:10px;font-weight:600;padding:3px 10px;border-radius:20px;white-space:nowrap}
+.plan-name{font-size:14px;font-weight:600;margin-bottom:2px}
+.plan-price{font-size:26px;font-weight:600;margin-bottom:2px}
+.plan-price span{font-size:13px;font-weight:400;color:#64748b}
+.plan-limit{font-size:12px;color:#64748b;margin-bottom:.75rem}
+.plan-feat{font-size:12px;color:#475569;padding:3px 0;display:flex;gap:6px}
+.plan-feat::before{content:'✓';color:#16a34a;font-weight:600}
+.section-title{font-size:15px;font-weight:600;margin-bottom:.5rem}
+.section-sub{font-size:13px;color:#64748b;margin-bottom:1rem}
+.addon-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin-bottom:2rem}
+.addon-card{border:1.5px solid #e2e8f0;border-radius:12px;padding:1rem;background:white;display:flex;gap:10px}
+.addon-icon{font-size:20px}
+.addon-name{font-size:13px;font-weight:500;margin-bottom:2px}
+.addon-desc{font-size:11px;color:#64748b;line-height:1.5}
+.addon-price{font-size:12px;font-weight:600;color:#7c3aed;margin-top:3px}
+.cta{display:block;text-align:center;background:#16a34a;color:white;text-decoration:none;font-size:15px;font-weight:600;padding:13px;border-radius:10px;max-width:360px;margin:0 auto 1rem}
+.cta:hover{opacity:.9}
+.fine{font-size:12px;color:#64748b;text-align:center;line-height:1.7}
+.trust-row{display:flex;gap:1.5rem;justify-content:center;flex-wrap:wrap;margin-top:2rem;padding-top:2rem;border-top:1px solid #e2e8f0}
+.trust-item{font-size:12px;color:#64748b}
+</style>
+</head>
+<body>
+<nav>
+  <a href="marketing.html" class="logo"><div class="logo-mark">💚</div><span class="logo-text">Superb</span></a>
+  <a class="nav-link" href="portal.html">Log in</a>
+</nav>
+
+<div class="main">
+  <div style="text-align:center">
+    <div class="trial-badge">🎉 60 days free · no card needed to start</div>
+    <h1 class="page-title">Plans and pricing</h1>
+    <p class="page-sub">Pick the size that fits your company. Every feature, including add-ons, is unlocked during your trial, and you choose your plan from inside the app.</p>
+  </div>
+
+  <div class="plan-grid">
+    <div class="plan-card">
+      <div class="plan-name">Starter</div>
+      <div class="plan-price">£149<span>/month</span></div>
+      <div class="plan-limit">Up to 25 employees</div>
+      <div class="plan-feat">Weekly mood check-ins</div>
+      <div class="plan-feat">Anonymous mail centre</div>
+      <div class="plan-feat">Fitness competitions</div>
+      <div class="plan-feat">Your own EAP details</div>
+      <div class="plan-feat">Weekly summary email for managers</div>
+      <div class="plan-feat">Manager app + employee app</div>
+    </div>
+    <div class="plan-card featured">
+      <div class="plan-popular">Most popular</div>
+      <div class="plan-name">Growth</div>
+      <div class="plan-price">£299<span>/month</span></div>
+      <div class="plan-limit">26–75 employees</div>
+      <div class="plan-feat">Everything in Starter</div>
+      <div class="plan-feat">All add-ons available</div>
+      <div class="plan-feat">Room for up to 75 people</div>
+    </div>
+    <div class="plan-card">
+      <div class="plan-name">Scale</div>
+      <div class="plan-price">£499<span>/month</span></div>
+      <div class="plan-limit">76–150 employees</div>
+      <div class="plan-feat">Everything in Growth</div>
+      <div class="plan-feat">Room for up to 150 people</div>
+    </div>
+  </div>
+
+  <div class="section-title">Optional add-ons</div>
+  <div class="section-sub">Add or remove any time from your billing page</div>
+  <div class="addon-grid">
+    <div class="addon-card"><div class="addon-icon">🏖️</div><div><div class="addon-name">Holiday Planner</div><div class="addon-desc">Employees request time off in the app. Approve or deny with one click.</div><div class="addon-price">+£49/month</div></div></div>
+    <div class="addon-card"><div class="addon-icon">📋</div><div><div class="addon-name">Regulations Centre</div><div class="addon-desc">Upload company policies and handbooks for employees to read.</div><div class="addon-price">+£29/month</div></div></div>
+    <div class="addon-card" style="border-color:#ddd6fe"><div class="addon-icon">🤝</div><div><div class="addon-name">Customer Relationships (CRM)</div><div class="addon-desc">Customer profiles, meetings, an opportunities pipeline and health scores for your reps, with optional AI-assisted meeting write-ups. Managers see every rep and customer.</div><div class="addon-price">+£300/month</div></div></div>
+    <div class="addon-card"><div class="addon-icon">🤖</div><div><div class="addon-name">AI Wellbeing Guides</div><div class="addon-desc">Ten practical guides (stress, sleep, burnout, posture and more) written by AI, reviewed in advance and refreshed monthly for your team to read.</div><div class="addon-price">+£39/month</div></div></div>
+    <div class="addon-card"><div class="addon-icon">🎓</div><div><div class="addon-name">Courses Centre</div><div class="addon-desc">Create training courses on first aid, posture, fire safety and more.</div><div class="addon-price">+£79/month</div></div></div>
+  </div>
+
+  <a class="cta" href="portal.html">Start my free 60 days</a>
+  <p class="fine">Need a hand setting up? Email <a href="mailto:bengraybaikie@hotmail.com" style="color:#16a34a">bengraybaikie@hotmail.com</a> and I will help you get going.<br><br>Create your workspace, invite your team with a code, and decide on a plan whenever you are ready.<br>Prices are per month. Your free trial ends after 60 days; add a card before then to keep your workspace. You can cancel any time from the billing page.</p>
+
+  <div class="trust-row">
+    <div class="trust-item">✅ Cancel any time</div>
+    <div class="trust-item">✅ No setup fees</div>
+    <div class="trust-item">✅ Managers never see an individual's mood — only team averages</div>
+    <div class="trust-item">✅ Based in Scotland</div>
+  </div>
+</div>
+</body>
+</html>

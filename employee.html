@@ -1,0 +1,2695 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Superb Employee — Demo</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f8fafc;color:#0f172a;font-size:14px}
+.demo-bar{background:#16a34a;color:white;text-align:center;padding:8px;font-size:12px;font-weight:500;position:sticky;top:0;z-index:200}
+.demo-bar a{color:#bbf7d0;text-decoration:underline;margin-left:8px;cursor:pointer}
+.app{display:flex;min-height:calc(100vh - 36px)}
+.sidebar{width:210px;background:white;border-right:1px solid #e2e8f0;display:flex;flex-direction:column;padding:1rem .75rem;gap:1px;flex-shrink:0;position:sticky;top:36px;height:calc(100vh - 36px);overflow-y:auto}
+.mobile-menu-btn{display:none}
+.mobile-nav-overlay{display:none}
+@media(max-width:820px){
+  .mobile-menu-btn{display:flex;align-items:center;gap:6px;position:sticky;top:36px;z-index:150;width:100%;padding:10px 1rem;background:white;border:none;border-bottom:1px solid #e2e8f0;font-size:13px;font-weight:500;color:#334155;cursor:pointer;font-family:inherit}
+  .app{position:relative}
+  .sidebar{position:fixed;left:-260px;top:0;height:100vh;z-index:250;transition:left .2s ease;box-shadow:2px 0 12px rgba(0,0,0,.08);padding-top:1.5rem}
+  .sidebar.mobile-open{left:0}
+  .mobile-nav-overlay.show{display:block;position:fixed;inset:0;background:rgba(15,23,42,.4);z-index:240}
+  .cust-row{flex-wrap:wrap}
+}
+.brand{display:flex;align-items:center;gap:8px;margin-bottom:1rem;padding:0 4px}
+.brand-icon{width:30px;height:30px;border-radius:8px;background:#dcfce7;display:flex;align-items:center;justify-content:center;font-size:15px}
+.brand-name{font-size:14px;font-weight:600}
+.brand-tag{font-size:10px;color:#16a34a;background:#dcfce7;padding:1px 6px;border-radius:4px;margin-left:auto}
+.ns{font-size:10px;color:#94a3b8;padding:8px 6px 2px;letter-spacing:.06em;text-transform:uppercase}
+.ni{display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:7px;cursor:pointer;font-size:12.5px;color:#475569}
+.ni:hover{background:#f1f5f9;color:#0f172a}
+.ni.on{background:#dcfce7;color:#16a34a;font-weight:500}
+.main{flex:1;overflow-y:auto;padding:1.5rem}
+.pg{display:none;max-width:680px}.pg.on{display:block}
+.pg.crm-page{max-width:1200px}
+.pg-title{font-size:20px;font-weight:600;margin-bottom:2px}
+.pg-sub{font-size:12px;color:#64748b;margin-bottom:1.25rem}
+.card{background:white;border:1px solid #e2e8f0;border-radius:12px;padding:1rem;margin-bottom:.875rem}
+.ct{font-size:13px;font-weight:600;margin-bottom:.75rem}
+.mg{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:1rem}
+.mc{background:white;border:1px solid #e2e8f0;border-radius:10px;padding:.875rem}
+.ml{font-size:11px;color:#94a3b8;margin-bottom:4px}
+.mv{font-size:20px;font-weight:600}
+.mc-c{font-size:11px;color:#16a34a;margin-top:2px}
+.ri{display:flex;align-items:flex-start;gap:10px;padding:9px 0;border-bottom:1px solid #f8fafc}
+.ri:last-child{border-bottom:none}
+.ri-txt{font-size:12px;color:#0f172a;line-height:1.5;flex:1}
+.ri-sub{font-size:11px;color:#94a3b8;margin-top:2px}
+.week-note{background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:10px 14px;font-size:12px;color:#16a34a;margin-bottom:1rem}
+.emojis{display:flex;gap:6px;margin-bottom:12px}
+.emj{flex:1;padding:12px 4px;border-radius:8px;border:1px solid #e2e8f0;background:#f8fafc;cursor:pointer;text-align:center;font-size:20px;transition:all .12s}
+.emj:hover,.emj.on{border-color:#16a34a;background:#dcfce7}
+.emj-lbl{font-size:10px;color:#94a3b8;display:block;margin-top:2px}
+.ta{width:100%;padding:9px 12px;border:1px solid #e2e8f0;border-radius:8px;font-size:13px;font-family:inherit;resize:vertical;min-height:80px}
+.btn{padding:9px 18px;border-radius:8px;border:none;font-size:13px;font-weight:500;cursor:pointer}
+.btn-g{background:#16a34a;color:white}.btn-g:hover{opacity:.9}
+.btn-o{background:white;color:#334155;border:1px solid #e2e8f0}.btn-o:hover{background:#f8fafc}
+.btn-full{width:100%;padding:10px;margin-top:8px}
+.toggle-row{display:flex;gap:8px;margin-bottom:10px}
+.tog{padding:7px 14px;border-radius:8px;border:1px solid #e2e8f0;background:#f8fafc;color:#64748b;font-size:12px;cursor:pointer}
+.tog.on{background:#fef9c3;color:#a16207;border-color:#fde68a}
+.tag-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.tag-opt{font-size:11px;padding:3px 9px;border-radius:6px;border:1px solid #e2e8f0;background:#f8fafc;color:#64748b;cursor:pointer}
+.tag-opt.on{background:#dbeafe;color:#1d4ed8;border-color:#bfdbfe}
+.ok{background:#dcfce7;color:#16a34a;font-size:12px;padding:8px 12px;border-radius:7px;margin-top:8px;display:none}
+.prog-t{height:8px;background:#f1f5f9;border-radius:4px;overflow:hidden;margin:6px 0 3px}
+.prog-f{height:100%;border-radius:4px;background:#16a34a}
+.ch-item{padding:12px 0;border-bottom:1px solid #f8fafc}
+.ch-item:last-child{border-bottom:none}
+.hsp{font-size:10px;padding:2px 8px;border-radius:6px}
+.hsp-p{background:#fef9c3;color:#a16207}.hsp-a{background:#dcfce7;color:#16a34a}.hsp-d{background:#fee2e2;color:#dc2626}
+.eap-card{background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;padding:1rem;margin-bottom:.875rem}
+.eap-card h3{font-size:14px;font-weight:600;color:#16a34a;margin-bottom:6px}
+.res-item{border:1px solid #e2e8f0;border-radius:10px;padding:1rem;margin-bottom:.75rem;cursor:pointer;transition:all .12s}
+.res-item:hover{border-color:#16a34a;background:#f0fdf4}
+.res-title{font-size:13px;font-weight:500}
+.res-meta{font-size:11px;color:#94a3b8;margin-top:2px}
+.res-body{display:none;margin-top:1rem;font-size:13px;color:#334155;line-height:1.8;border-top:1px solid #f1f5f9;padding-top:1rem}
+.course-card{border:1px solid #e2e8f0;border-radius:10px;padding:1rem;margin-bottom:.75rem}
+.co-hdr{display:flex;align-items:center;gap:10px;margin-bottom:.75rem}
+.co-icon{width:38px;height:38px;border-radius:8px;background:#f1f5f9;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.field{margin-bottom:10px}
+.field label{font-size:12px;font-weight:500;color:#334155;display:block;margin-bottom:3px}
+.field input,.field select{width:100%;padding:8px 11px;border:1px solid #e2e8f0;border-radius:7px;font-size:13px;font-family:inherit;background:white}
+.ai-loading{color:#94a3b8;font-size:12px;font-style:italic}
+.mgr-reply{font-size:12px;color:#334155;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;padding:8px 10px;margin-top:8px}
+.mgr-reply b{color:#16a34a}
+.emp-hol-tab{padding:7px 14px;border-radius:8px;border:1px solid #e2e8f0;background:#f8fafc;color:#64748b;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit}
+.emp-hol-tab.on{background:#dcfce7;color:#16a34a;border-color:#bbf7d0}
+.emp-cal-grid{display:grid;font-size:11px;border:1px solid #f1f5f9;border-radius:8px;overflow:hidden}
+.ecal-head{background:#f8fafc;padding:5px 2px;text-align:center;font-weight:600;color:#64748b;border-bottom:1px solid #e2e8f0;border-right:1px solid #f1f5f9;font-size:10px}
+.ecal-head.today-col{background:#dcfce7;color:#16a34a}
+.ecal-name{padding:6px 8px;font-size:11px;font-weight:500;color:#334155;border-bottom:1px solid #f8fafc;border-right:1px solid #f1f5f9;background:white;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ecal-name.is-me{color:#16a34a;font-weight:600}
+.ecal-cell{border-bottom:1px solid #f8fafc;border-right:1px solid #f1f5f9;height:28px}
+.ecal-cell.off{background:#dcfce7}
+.ecal-cell.pending{background:#fef9c3}
+.ecal-cell.me-off{background:#dbeafe}
+.ecal-cell.me-pend{background:#bfdbfe}
+.ecal-cell.weekend{background:#f8fafc}
+.ecal-cell.today-col{background:#f0fdf4}
+/* ===== Relationships (rep CRM) ===== */
+.nb{background:#f1f5f9;color:#64748b;font-size:10px;padding:1px 6px;border-radius:10px;margin-left:auto}
+.nb-o{background:#ede9fe;color:#7c3aed}
+.sp{display:inline-flex;align-items:center;font-size:10px;font-weight:600;padding:2px 8px;border-radius:20px}
+.sp-p{background:#fef9c3;color:#a16207}.sp-a{background:#dcfce7;color:#16a34a}.sp-d{background:#fee2e2;color:#dc2626}.sp-purple{background:#ede9fe;color:#7c3aed}
+.empty{font-size:12px;color:#94a3b8;text-align:center;padding:1.25rem 0}
+.search-box{width:100%;padding:9px 12px;border:1px solid #e2e8f0;border-radius:8px;font-size:13px;font-family:inherit;background:white;margin-bottom:.75rem}
+.btn-p{background:#7c3aed;color:white}.btn-p:hover{opacity:.9}
+.btn-r{background:#dc2626;color:white}.btn-r:hover{opacity:.9}
+.health-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.cust-avatar{width:36px;height:36px;border-radius:9px;background:#ede9fe;color:#7c3aed;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;flex-shrink:0}
+.cust-row{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid #f8fafc;cursor:pointer}
+.cust-row:last-child{border-bottom:none}
+.cust-row:hover{background:#f8fafc;margin:0 -1rem;padding-left:1rem;padding-right:1rem;border-radius:8px}
+.cust-name{font-size:13px;font-weight:600;color:#0f172a}
+.cust-sub{font-size:11px;color:#64748b;margin-top:1px}
+.ai-box{background:#faf5ff;border:1px solid #e9d5ff;border-radius:12px;padding:1rem;margin-bottom:.875rem}
+.ai-box-h{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:#7c3aed;margin-bottom:.5rem}
+.ai-box-t{font-size:13px;color:#334155;line-height:1.7}
+.stat-mini-row{display:flex;gap:8px;margin-bottom:1rem}
+.stat-mini{flex:1;background:#f8fafc;border-radius:8px;padding:.6rem .75rem}
+.stat-mini-l{font-size:10px;color:#94a3b8}
+.stat-mini-v{font-size:13px;font-weight:600;color:#0f172a;margin-top:2px}
+.task-check{width:18px;height:18px;border-radius:5px;border:1.5px solid #e2e8f0;flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:11px}
+.task-check.checked{background:#16a34a;border-color:#16a34a;color:white}
+.hol-tab{padding:6px 14px;border-radius:8px;border:1px solid #e2e8f0;background:#f8fafc;color:#64748b;font-size:12px;font-weight:500;cursor:pointer}
+.hol-tab.on{background:#ede9fe;color:#7c3aed;border-color:#ddd6fe}
+.rec-indicator{display:flex;align-items:center;gap:6px;padding:5px 12px;background:#fee2e2;border-radius:20px;width:fit-content;font-size:11px;font-weight:600;color:#dc2626;margin-bottom:.75rem}
+.rec-dot{width:7px;height:7px;border-radius:50%;background:#dc2626;animation:pulse 1.2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+.sentiment-track{flex:1;height:8px;background:#f1f5f9;border-radius:4px;overflow:hidden}
+.sentiment-fill{height:100%;border-radius:4px}
+.ai-loading-box{text-align:center;padding:2rem 1rem}
+.ai-loading-spin{width:28px;height:28px;border:3px solid #e9d5ff;border-top-color:#7c3aed;border-radius:50%;margin:0 auto 12px;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.ai-section-lbl{font-size:10px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;margin-top:10px}
+.ai-section-lbl:first-child{margin-top:0}
+.ai-section-item{display:flex;align-items:flex-start;gap:6px;font-size:12px;color:#334155;padding:2px 0}
+.add-cust-form{display:none;margin-bottom:.875rem}
+/* CRM Overview + widened layout components */
+.crm-stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:1rem}
+@media(max-width:900px){.crm-stat-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:520px){.crm-stat-grid{grid-template-columns:1fr}}
+.crm-stat-card{background:white;border:1px solid #e2e8f0;border-radius:12px;padding:1rem}
+.crm-stat-l{font-size:11px;color:#94a3b8;font-weight:500;text-transform:uppercase;letter-spacing:.04em}
+.crm-stat-v{font-size:24px;font-weight:700;margin-top:4px}
+.crm-two-col{display:grid;grid-template-columns:1.3fr 1fr;gap:1rem}
+@media(max-width:800px){.crm-two-col{grid-template-columns:1fr}}
+.health-bar-row{display:flex;align-items:center;gap:10px;padding:6px 0}
+.health-bar-track{flex:1;height:8px;background:#f1f5f9;border-radius:4px;overflow:hidden}
+.health-bar-fill{height:100%;border-radius:4px}
+.next-action-card{background:#ede9fe;border:1px solid #ddd6fe;border-radius:12px;padding:1rem}
+.next-action-l{font-size:10px;font-weight:700;color:#7c3aed;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+.health-reason-list{margin-top:8px;padding-left:0;list-style:none}
+.health-reason-item{font-size:12px;color:#64748b;padding:2px 0;display:flex;gap:6px}
+.health-reason-item::before{content:'•';color:#94a3b8}
+.contact-card{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #f8fafc}
+.contact-card:last-child{border-bottom:none}
+.contact-avatar{width:32px;height:32px;border-radius:50%;background:#ede9fe;color:#7c3aed;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;flex-shrink:0}
+.opp-pipeline-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:.75rem}
+@media(max-width:900px){.opp-pipeline-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:520px){.opp-pipeline-grid{grid-template-columns:1fr}}
+.ai-label-tag{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:600;color:#7c3aed;background:#ede9fe;padding:2px 8px;border-radius:10px;margin-bottom:6px}
+.customer-filter-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:.75rem}
+.customer-filter-chip{padding:5px 12px;border-radius:20px;border:1px solid #e2e8f0;background:#f8fafc;color:#64748b;font-size:11px;font-weight:500;cursor:pointer}
+.customer-filter-chip.on{background:#ede9fe;color:#7c3aed;border-color:#ddd6fe}
+.search-group-lbl{font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.05em;padding:8px 8px 4px}
+.search-result-row{display:flex;align-items:center;gap:10px;padding:8px;border-radius:8px;cursor:pointer}
+.search-result-row:hover{background:#f8fafc}
+.search-result-icon{width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
+.join-link-card{background:#faf5ff;border:1px solid #e9d5ff;border-radius:10px;padding:1rem}
+.rec-card{background:#fffbeb;border:1px solid #fde68a;border-radius:12px;padding:1rem;margin-bottom:.75rem}
+.rec-card-hdr{display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:600;color:#a16207;margin-bottom:4px}
+.action-row{display:flex;align-items:center;gap:8px;padding:4px 0}
+.action-row input[type=checkbox]{width:15px;height:15px;flex-shrink:0}
+.action-row-text{flex:1;font-size:12.5px;color:#334155}
+.action-row-text.done{text-decoration:line-through;color:#94a3b8}
+.oto-agenda-lbl{font-size:11px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:.05em;margin:10px 0 4px}
+.oto-agenda-lbl:first-child{margin-top:0}
+</style>
+</head>
+<body>
+
+<div class="demo-bar" id="demo-bar">🎭 DEMO MODE — Viewing as Alex Morgan, Acme Construction Ltd. <a onclick="window.open('https://superbwellness.co.uk','_blank')">Sign up at superbwellness.co.uk</a></div>
+
+<button class="mobile-menu-btn" onclick="toggleMobileNav()">☰ Menu</button>
+<div class="mobile-nav-overlay" id="mobile-nav-overlay" onclick="closeMobileNav()"></div>
+
+<div class="app">
+  <div class="sidebar" id="sidebar">
+    <div class="brand"><div class="brand-icon">💚</div><span class="brand-name">Superb</span><span class="brand-tag">Employee</span></div>
+    <div class="ni" onclick="openSearchPalette()" style="background:#f8fafc;border:1px solid #e2e8f0;margin-bottom:8px">🔍 Search everything <span style="margin-left:auto;font-size:10px;color:#94a3b8;border:1px solid #e2e8f0;border-radius:4px;padding:1px 5px">⌘K</span></div>
+    <span class="ns">Home</span>
+    <div class="ni on" onclick="pg('home',this)">🏠 Dashboard</div>
+    <div id="relationships-nav">
+    <span class="ns">Customer Relationships</span>
+    <div class="ni" onclick="pg('crm-overview',this);renderCrmOverview()">📊 CRM Overview</div>
+    <div class="ni" onclick="pg('customers',this)">🤝 My customers <span class="nb nb-o" id="nav-cust-count"></span></div>
+    <div class="ni" onclick="pg('meetings',this)">📅 Meetings <span class="nb nb-o" id="nav-meet-count"></span></div>
+    <div class="ni" onclick="pg('tasks',this)">✅ Tasks <span class="nb nb-o" id="nav-task-count"></span></div>
+    <div class="ni" onclick="pg('opportunities',this)">📈 Opportunities</div>
+    </div>
+    <span class="ns">Communication</span>
+    <div class="ni" onclick="pg('mail',this)">✉️ Mail centre</div>
+    <span class="ns">Employee</span>
+    <div class="ni" onclick="pg('checkin',this)">😊 Weekly check-in</div>
+    <div class="ni" onclick="pg('myonetoones',this);renderMyOneToOnes()">🗣️ My 1-to-1s <span class="nb nb-o" id="nav-my1to1-count"></span></div>
+    <div class="ni" onclick="pg('myrecognition',this);renderMyRecognition()">🌟 Recognition <span class="nb nb-o" id="nav-my-rec-count"></span></div>
+    <div class="ni" onclick="pg('compete',this)">🏆 Competitions</div>
+    <div class="ni" onclick="pg('holidays',this)">🏖️ My holidays</div>
+    <div class="ni" onclick="pg('courses',this)">🎓 Courses</div>
+    <div class="ni" onclick="pg('regulations',this);renderMyRegulations()">📋 Regulations</div>
+    <span class="ns">Wellbeing</span>
+    <div class="ni" onclick="pg('resources',this)">💚 Resources</div>
+    <div class="ni" onclick="pg('reflection',this)">🪞 My reflection</div>
+  </div>
+
+  <div class="main">
+
+    <!-- HOME -->
+    <div class="pg on" id="pg-home">
+      <div class="pg-title">Welcome back, Alex 👋</div>
+      <div class="pg-sub">Acme Construction Ltd · Monday 30 June 2026</div>
+      <div class="mg">
+        <div class="mc"><div class="ml">Check-in streak</div><div class="mv">8 wks</div><div class="mc-c">Keep it up!</div></div>
+        <div class="mc"><div class="ml">Steps this month</div><div class="mv">58,300</div><div class="mc-c">97% of goal</div></div>
+        <div class="mc"><div class="ml">Competition rank</div><div class="mv">#3</div><div class="mc-c">Top 11%</div></div>
+        <div class="mc"><div class="ml">Courses done</div><div class="mv">4/6</div><div class="mc-c">2 remaining</div></div>
+      </div>
+      <div class="card">
+        <div class="ct">This week</div>
+        <div style="font-size:13px;color:#475569;line-height:1.75">
+          ✅ You checked in this week — thanks for sharing. See you next Monday.<br><br>
+          🏆 You are in 3rd place in the June step challenge with 58,300 steps. Jamie T is leading with 71,200 — keep going!<br><br>
+          🎓 You have 2 courses left to complete this month — <b>Fire Safety Awareness</b> and <b>GDPR and Data Protection</b>.
+        </div>
+      </div>
+      <div class="card">
+        <div class="ct">Quick links</div>
+        <div style="font-size:13px;color:#475569;line-height:2.1">
+          ✉️ <b>Mail centre</b> — send your manager a message, anonymous or named<br>
+          🏖️ <b>Holidays</b> — request time off and track your approvals<br>
+          📋 <b>Regulations</b> — read company policies any time<br>
+          🎓 <b>Courses</b> — complete your training modules<br>
+          💚 <b>Resources</b> — wellbeing guides and your EAP support
+        </div>
+      </div>
+    </div>
+
+    <!-- WEEKLY CHECK-IN -->
+    <div class="pg" id="pg-checkin">
+      <div class="pg-title">Weekly check-in</div>
+      <div class="pg-sub">Anonymous · once a week · helps your manager support the team</div>
+      <div class="week-note">Week of 30 June 2026 · your responses are always anonymous</div>
+      <div id="ci-done" style="display:none">
+        <div class="card" style="text-align:center;padding:2rem">
+          <div style="font-size:36px;margin-bottom:8px">✅</div>
+          <div style="font-size:16px;font-weight:600;margin-bottom:6px">You have checked in this week</div>
+          <div style="font-size:13px;color:#64748b">See you again next Monday. Thank you for sharing.</div>
+        </div>
+      </div>
+      <div id="ci-form">
+        <div class="card">
+          <div class="ct">How has this week felt?</div>
+          <div class="emojis">
+            <div class="emj" onclick="pickMood(this,1)">😞<span class="emj-lbl">Struggling</span></div>
+            <div class="emj" onclick="pickMood(this,2)">😐<span class="emj-lbl">Low</span></div>
+            <div class="emj" onclick="pickMood(this,3)">🙂<span class="emj-lbl">Okay</span></div>
+            <div class="emj" onclick="pickMood(this,4)">😊<span class="emj-lbl">Good</span></div>
+            <div class="emj" onclick="pickMood(this,5)">🤩<span class="emj-lbl">Great</span></div>
+          </div>
+          <div class="field"><label>Anything to share this week? (optional)</label><textarea class="ta" id="ci-note" placeholder="A thought, concern, or win — shared anonymously with your manager"></textarea></div>
+          <div style="font-size:11px;color:#94a3b8;margin-bottom:10px">🔒 Your name is never attached to check-ins</div>
+          <button class="btn btn-g btn-full" onclick="submitCheckin()">Submit check-in</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MY 1-TO-1s -->
+    <div class="pg" id="pg-myonetoones">
+      <div class="pg-title">🗣️ My 1-to-1s</div>
+      <div class="pg-sub">Scheduled by your manager — notes and actions are shared with you</div>
+      <div class="card" id="my-oto-list"></div>
+    </div>
+
+    <!-- 1-TO-1 DETAIL (employee view) -->
+    <div class="pg" id="pg-myoto-detail">
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:.75rem;cursor:pointer;color:#64748b;font-size:12px" onclick="pg('myonetoones',document.querySelector('.ni[onclick*=myonetoones]'))">← Back to my 1-to-1s</div>
+      <div id="my-oto-detail-body"></div>
+    </div>
+
+    <!-- MY RECOGNITION -->
+    <div class="pg" id="pg-myrecognition">
+      <div class="pg-title">🌟 Recognition</div>
+      <div class="pg-sub">Thank-yous from your manager</div>
+      <div id="my-rec-list"></div>
+    </div>
+
+    <!-- MAIL CENTRE -->
+    <div class="pg" id="pg-mail">
+      <div class="pg-title">Mail centre</div>
+      <div class="pg-sub">Send a message to your manager — anonymous or named</div>
+      <div class="card">
+        <div class="ct">New message</div>
+        <div style="font-size:12px;color:#334155;margin-bottom:5px;font-weight:500">Send as</div>
+        <div class="toggle-row">
+          <button class="tog on" id="anon-btn" onclick="setAnon(true)">🙈 Anonymous</button>
+          <button class="tog" id="named-btn" onclick="setAnon(false)">👤 Named (Alex Morgan)</button>
+        </div>
+        <div style="font-size:12px;color:#334155;margin-bottom:5px;font-weight:500">Category</div>
+        <div class="tag-row">
+          <span class="tag-opt on" onclick="pickTag(this)">General</span>
+          <span class="tag-opt" onclick="pickTag(this)">Workload</span>
+          <span class="tag-opt" onclick="pickTag(this)">Wellbeing</span>
+          <span class="tag-opt" onclick="pickTag(this)">Suggestion</span>
+          <span class="tag-opt" onclick="pickTag(this)">Urgent</span>
+        </div>
+        <div class="field"><label>Message</label><textarea class="ta" id="mail-body" placeholder="Write your message here..."></textarea></div>
+        <button class="btn btn-g btn-full" onclick="sendMessage()">Send message</button>
+        <div class="ok" id="mail-ok">Message sent</div>
+      </div>
+      <div class="card">
+        <div class="ct">Your sent messages</div>
+        <div class="ri"><div style="width:28px;height:28px;border-radius:50%;background:#f1f5f9;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0">🙈</div><div style="flex:1"><div class="ri-txt" style="font-weight:500">Anonymous · Suggestion</div><div class="ri-txt" style="margin-top:2px">Would it be possible to trial a no-meeting Wednesday morning each week?</div><div class="ri-sub">5 days ago</div><div class="mgr-reply"><b>↩ Sarah replied:</b> Really good idea — we are trialling this from next Wednesday across the team. Thank you for raising it.</div></div></div>
+        <div class="ri"><div style="width:28px;height:28px;border-radius:50%;background:#dcfce7;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#16a34a;flex-shrink:0">AM</div><div style="flex:1"><div class="ri-txt" style="font-weight:500">Alex Morgan · General</div><div class="ri-txt" style="margin-top:2px">Really enjoying the step challenge — great idea for team morale!</div><div class="ri-sub">2 weeks ago</div><div style="font-size:11px;color:#94a3b8;margin-top:6px">No reply yet</div></div></div>
+      </div>
+    </div>
+
+    <!-- COMPETITIONS -->
+    <div class="pg" id="pg-compete">
+      <div class="pg-title">Competitions</div>
+      <div class="pg-sub">Active and upcoming team challenges</div>
+      <div class="card">
+        <div class="ct" style="justify-content:space-between">🏃 June step challenge <span style="font-size:11px;background:#dcfce7;color:#16a34a;padding:2px 8px;border-radius:6px">Live</span></div>
+        <div style="font-size:11px;color:#94a3b8;margin-bottom:10px">Ends 30 June · goal: 60,000 steps · 24 participants</div>
+        <div style="font-size:12px;font-weight:500;margin-bottom:4px">Your progress</div>
+        <div class="prog-t"><div class="prog-f" style="width:97%"></div></div>
+        <div style="display:flex;justify-content:space-between;font-size:11px;color:#94a3b8;margin-bottom:14px"><span>58,300 / 60,000 steps</span><span>97% · You are nearly there!</span></div>
+        <div style="font-size:12px;font-weight:500;margin-bottom:8px">Leaderboard</div>
+        <div id="lb-list"></div>
+      </div>
+      <div class="card">
+        <div class="ct" style="justify-content:space-between">🧘 July mindfulness challenge <span style="font-size:11px;background:#dbeafe;color:#1d4ed8;padding:2px 8px;border-radius:6px">Upcoming</span></div>
+        <div style="font-size:11px;color:#94a3b8;margin-bottom:10px">Starts 1 July · goal: 300 mindfulness minutes</div>
+        <button class="btn btn-g btn-full" onclick="joinChallenge(this)">Join challenge</button>
+      </div>
+      <div class="card">
+        <div class="ct" style="justify-content:space-between">🚴 May cycling challenge <span style="font-size:11px;background:#f1f5f9;color:#94a3b8;padding:2px 8px;border-radius:6px">Ended</span></div>
+        <div style="font-size:11px;color:#94a3b8">You finished 2nd · 284km logged · great effort!</div>
+      </div>
+    </div>
+
+    <!-- HOLIDAYS -->
+    <div class="pg" id="pg-holidays">
+      <div class="pg-title">🏖️ My Holidays</div>
+      <div class="pg-sub">Request time off · see when your teammates are away</div>
+
+      <!-- TABS -->
+      <div style="display:flex;gap:8px;margin-bottom:1rem">
+        <button class="emp-hol-tab on" onclick="empHolTab('request',this)">➕ Request</button>
+        <button class="emp-hol-tab" onclick="empHolTab('mine',this)">📋 My requests</button>
+        <button class="emp-hol-tab" onclick="empHolTab('team',this)">📅 Team calendar</button>
+      </div>
+
+      <!-- REQUEST TAB -->
+      <div id="emp-hol-request">
+        <div class="card">
+          <div class="ct">Request time off</div>
+          <div class="field"><label>Start date</label><input type="date" id="hol-start"></div>
+          <div class="field"><label>End date</label><input type="date" id="hol-end"></div>
+          <div class="field"><label>Reason (optional)</label><input type="text" id="hol-reason" placeholder="Family holiday, medical appointment..."></div>
+          <button class="btn btn-g btn-full" onclick="requestHoliday()">Submit request</button>
+          <div class="ok" id="hol-ok">✓ Request submitted — your manager will review it shortly</div>
+        </div>
+      </div>
+
+      <!-- MY REQUESTS TAB -->
+      <div id="emp-hol-mine" style="display:none">
+        <div class="card">
+          <div class="ct">📊 My annual leave allowance</div>
+          <div id="my-allowance-summary"></div>
+          <div style="font-size:11px;color:#94a3b8;margin-top:8px;padding-top:8px;border-top:1px solid #f1f5f9">ℹ️ Your total allowance is set individually by your manager and may differ from your colleagues — for example if you work part-time or have negotiated extra leave.</div>
+        </div>
+        <div class="card">
+          <div class="ct">My requests</div>
+          <div id="my-hol-requests"></div>
+        </div>
+      </div>
+
+      <!-- TEAM CALENDAR TAB -->
+      <div id="emp-hol-team" style="display:none">
+        <div class="card">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem">
+            <div style="font-size:13px;font-weight:600" id="emp-cal-title"></div>
+            <div style="display:flex;gap:6px">
+              <button class="btn btn-o" style="padding:5px 10px;font-size:12px" onclick="empCalNav(-1)">← Prev</button>
+              <button class="btn btn-o" style="padding:5px 10px;font-size:12px" onclick="empCalNav(1)">Next →</button>
+            </div>
+          </div>
+          <div style="font-size:12px;color:#64748b;margin-bottom:.75rem">Showing your department — Marketing</div>
+          <div id="emp-cal-grid"></div>
+          <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:1rem">
+            <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:#475569"><div style="width:12px;height:12px;border-radius:3px;background:#dcfce7;border:1px solid #16a34a"></div>Approved</div>
+            <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:#475569"><div style="width:12px;height:12px;border-radius:3px;background:#fef9c3;border:1px solid #a16207"></div>Pending</div>
+            <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:#475569"><div style="width:12px;height:12px;border-radius:3px;background:#dbeafe;border:1px solid #1d4ed8"></div>You</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- REGULATIONS -->
+    <div class="pg" id="pg-regulations">
+      <div class="pg-title">📋 Regulations</div>
+      <div class="pg-sub">Company policies uploaded by your manager</div>
+      <div class="card" id="reg-list-employee"></div>
+    </div>
+
+    <!-- COURSES -->
+    <div class="pg" id="pg-courses">
+      <div class="pg-title">🎓 Courses</div>
+      <div class="pg-sub">Complete your training modules</div>
+      <div id="course-list"></div>
+    </div>
+
+    <!-- RESOURCES -->
+    <div class="pg" id="pg-resources">
+      <div class="pg-title">💚 Wellbeing Resources</div>
+      <div class="pg-sub">Support, guides, and your EAP</div>
+      <div class="eap-card">
+        <h3>💚 Your Employee Assistance Programme</h3>
+        <div style="font-size:13px;color:#475569;line-height:1.8">
+          <b>Health Assured</b><br>
+          📞 0800 030 5182<br>
+          🌐 healthassured.org<br><br>
+          Free, confidential support available 24 hours a day, 7 days a week for all employees and their immediate family members. Covers mental health, legal, financial, and personal issues.
+        </div>
+      </div>
+      <div class="card">
+        <div class="ct">Wellbeing articles</div>
+        <div style="font-size:12px;color:#64748b;margin-bottom:12px">Tap any article below to read it in full.</div>
+
+        <div class="res-item" onclick="toggleArticle(this)">
+          <div class="res-title">🧠 Managing stress at work</div>
+          <div class="res-meta">Mental health · tap to read</div>
+          <div class="res-body">Stress in the workplace is something almost everyone experiences at some point, and recognising it early makes a real difference. Common signs include difficulty concentrating, feeling irritable or overwhelmed, disturbed sleep, and a sense of dread about going to work. None of these mean you are failing — they mean your body is telling you something needs to change.
+
+The most effective thing you can do is identify your main stressors and, where possible, address them directly. This might mean having an honest conversation with your manager about workload, blocking out focused time in your calendar, or simply learning to say no to things that are not a priority. Small changes to how you structure your day can dramatically reduce the pressure you feel.
+
+It also helps to build recovery into your routine rather than treating it as a reward for finishing everything. Taking a proper lunch break, stepping outside for ten minutes, and finishing work at a consistent time are not luxuries — they are what keep you performing well over the long term. Trying to push through without rest tends to make everything take longer and feel harder.
+
+If stress is persistent or beginning to affect your health, please reach out to your EAP provider. Talking to someone trained to help is one of the most effective things you can do, and everything you share is confidential.</div>
+        </div>
+
+        <div class="res-item" onclick="toggleArticle(this)">
+          <div class="res-title">🪑 Correct sitting posture</div>
+          <div class="res-meta">Physical health · tap to read</div>
+          <div class="res-body">Most back, neck, and shoulder pain in office workers comes down to how they sit — and the good news is that with a few simple adjustments, it is largely preventable. The goal is a position where your body is supported without being strained in any direction.
+
+Start with your chair. Your feet should rest flat on the floor with your knees at roughly a 90-degree angle. If you cannot achieve this, a footrest helps. Your lower back should be supported — either by the chair's lumbar support or a small cushion placed at the curve of your spine. Sitting with your lower back unsupported for hours at a time is one of the leading causes of chronic back pain.
+
+Your screen should be at eye level so you are not tilting your head up or down. If you use a laptop, consider a stand and a separate keyboard. Your elbows should be close to your body and bent at roughly 90 degrees when typing. Keep your wrists straight rather than bent upwards or downwards.
+
+The most important thing, however, is not to stay in any one position for too long. Set a reminder to stand up and move for a few minutes every 30 to 45 minutes. Even a short walk to make a drink or a few gentle stretches at your desk will make a significant difference over time.</div>
+        </div>
+
+        <div class="res-item" onclick="toggleArticle(this)">
+          <div class="res-title">😴 Sleep and performance</div>
+          <div class="res-meta">Recovery · tap to read</div>
+          <div class="res-body">Sleep is the single most powerful performance tool available to you, and it is free. Most adults need between seven and nine hours a night, and consistently getting less than that affects concentration, decision-making, mood, and immune function — often before you even notice it is happening. Research consistently shows that people who are sleep-deprived significantly overestimate how well they are functioning.
+
+The quality of your sleep matters as much as the quantity. A consistent bedtime and wake time — even at weekends — helps regulate your body clock and makes it easier to fall asleep and wake up naturally. Avoiding screens in the hour before bed makes a measurable difference, as the blue light they emit suppresses the melatonin your body needs to wind down.
+
+Caffeine has a half-life of around five to six hours, meaning a coffee at 3pm still has half its effect at 8pm or 9pm. If you struggle to fall asleep, cutting off caffeine after midday is worth trying before anything else. Alcohol, while it can make you feel drowsy, significantly disrupts sleep quality in the second half of the night and often leaves you feeling less rested than if you had not had it at all.
+
+If you are consistently waking in the night or struggling to fall asleep despite good habits, it is worth speaking to your GP. Sleep disorders are common and very treatable, and addressing them can transform how you feel at work and in general.</div>
+        </div>
+
+        <div class="res-item" onclick="toggleArticle(this)">
+          <div class="res-title">🏃 Staying active at a desk job</div>
+          <div class="res-meta">Physical health · tap to read</div>
+          <div class="res-body">Sitting for extended periods has been linked to a range of health issues including back pain, poor circulation, and increased risk of cardiovascular disease — and this holds true even for people who exercise regularly outside of work. The key is not just to exercise more, but to move more throughout the day.
+
+The simplest change you can make is to treat movement as a default rather than an exception. Take calls standing up or walking if you can. Use the stairs. Walk to a colleague rather than sending a message. These small decisions add up considerably over a working week without requiring any additional time or effort.
+
+If you work from home, it is easy to go hours without moving at all. Setting an alarm every 45 minutes as a prompt to stand up, stretch, or walk around the house for a couple of minutes is one of the most effective habits you can build. Some people find a standing desk useful, though the evidence suggests alternating between sitting and standing rather than standing all day.
+
+In terms of structured exercise, even 20 to 30 minutes of moderate activity — a brisk walk, a cycle, a short gym session — most days of the week has significant benefits for both physical and mental health. You do not need to be training for anything. Consistency matters far more than intensity, and something is always better than nothing.</div>
+        </div>
+
+        <div class="res-item" onclick="toggleArticle(this)">
+          <div class="res-title">🔥 Recognising burnout</div>
+          <div class="res-meta">Mental health · tap to read</div>
+          <div class="res-body">Burnout is a state of chronic exhaustion caused by prolonged stress, and it is more serious than simply feeling tired or having a difficult week. The World Health Organisation recognises it as an occupational phenomenon, and it tends to develop gradually over months rather than appearing suddenly.
+
+The three core signs are exhaustion — a deep, persistent fatigue that rest does not seem to fix; cynicism — a growing detachment from your work and the people around you, sometimes accompanied by feelings of resentment; and reduced effectiveness — a sense that you are putting in the effort but producing less, or that tasks that used to feel manageable now feel impossible.
+
+Burnout does not mean you are weak or that you chose the wrong career. It usually means you have been giving more than you have been able to recover for too long. Common contributing factors include excessive workload, lack of control over how you work, unclear expectations, poor relationships at work, and a mismatch between your values and what the job requires of you.
+
+If you recognise these signs in yourself, the most important thing is not to ignore them. Speak to your manager or your EAP provider. Taking time to recover early is far more effective — and far less disruptive to your life — than waiting until you have nothing left. Burnout that goes unaddressed can take months to recover from fully.</div>
+        </div>
+
+        <div class="res-item" onclick="toggleArticle(this)">
+          <div class="res-title">🤝 Building positive workplace relationships</div>
+          <div class="res-meta">Wellbeing · tap to read</div>
+          <div class="res-body">The quality of your relationships at work has a significant impact on how much you enjoy your job and how well you perform. People who feel connected to their colleagues report higher job satisfaction, are more likely to ask for help when they need it, and are generally more resilient when things get difficult.
+
+Building good workplace relationships does not require being particularly social or outgoing. It is mostly about consistency and genuine interest. Remembering small details about colleagues, following up on things they have mentioned, and being reliable when you commit to something all contribute to trust over time. So does being honest — people generally prefer a colleague who tells them the truth over one who always agrees with them.
+
+Conflict is inevitable in any working environment, and how you handle it matters more than whether it happens at all. When disagreements arise, try to address them directly and early rather than letting them fester. Focus on the issue rather than the person, and approach the conversation with curiosity rather than defensiveness. Most workplace tensions are rooted in misunderstandings or differing priorities rather than bad intentions.
+
+If you are working remotely or in a hybrid arrangement, relationships require a bit more intentional effort. Making time for non-work conversations, contributing to team channels, and being present on video calls rather than multitasking all help maintain the connection that comes naturally in a shared physical space.</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="ct">UK crisis support</div>
+        <div class="ri"><div class="ri-txt">📞 <b>Samaritans</b> — 116 123 · free, 24/7</div></div>
+        <div class="ri"><div class="ri-txt">💬 <b>Shout</b> — text SHOUT to 85258 · free crisis text line</div></div>
+        <div class="ri"><div class="ri-txt">🧠 <b>Mind</b> — 0300 123 3393 · Mon–Fri, 9am–6pm</div></div>
+        <div class="ri"><div class="ri-txt">🏥 <b>NHS 111</b> — for urgent mental health support</div></div>
+      </div>
+    </div>
+
+    <!-- CRM OVERVIEW -->
+    <div class="pg crm-page" id="pg-crm-overview">
+      <div class="pg-title">📊 CRM Overview</div>
+      <div class="pg-sub">Your customer relationships at a glance</div>
+      <div class="crm-stat-grid" id="crm-ov-stats"></div>
+      <div class="crm-two-col">
+        <div>
+          <div class="card">
+            <div class="ct">🕐 Today's work</div>
+            <div id="crm-ov-today"></div>
+          </div>
+          <div class="card">
+            <span class="ai-label-tag">✨ AI-generated</span>
+            <div class="ct" style="margin-top:0">Relationship insights</div>
+            <div id="crm-ov-insights"></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="ct">Customer health</div>
+          <div id="crm-ov-health"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MY CUSTOMERS -->
+    <div class="pg crm-page" id="pg-customers">
+      <div class="pg-title">🤝 My customers</div>
+      <div class="pg-sub">Customer relationships assigned to you — add more any time</div>
+      <div class="stat-mini-row">
+        <div class="stat-mini"><div class="stat-mini-l">Total</div><div class="stat-mini-v" id="mycust-total">–</div></div>
+        <div class="stat-mini"><div class="stat-mini-l">Needs attention</div><div class="stat-mini-v" style="color:#a16207" id="mycust-attention">–</div></div>
+        <div class="stat-mini"><div class="stat-mini-l">At risk</div><div class="stat-mini-v" style="color:#dc2626" id="mycust-risk">–</div></div>
+      </div>
+      <div style="display:flex;gap:8px;margin-bottom:.75rem">
+        <input type="text" class="search-box" id="mycust-search" placeholder="🔍 Search your customers..." style="margin-bottom:0" oninput="renderMyCustomers()">
+        <button class="btn btn-p" onclick="toggleAddCustomer()">➕ Add customer</button>
+      </div>
+      <div class="customer-filter-row" id="mycust-filters">
+        <div class="customer-filter-chip on" data-filter="all" onclick="setCustFilter('all',this)">All</div>
+        <div class="customer-filter-chip" data-filter="green" onclick="setCustFilter('green',this)">🟢 Healthy</div>
+        <div class="customer-filter-chip" data-filter="amber" onclick="setCustFilter('amber',this)">🟠 Needs attention</div>
+        <div class="customer-filter-chip" data-filter="red" onclick="setCustFilter('red',this)">🔴 At risk</div>
+        <select id="mycust-sector-filter" onchange="renderMyCustomers()" style="padding:5px 10px;border-radius:20px;border:1px solid #e2e8f0;background:#f8fafc;color:#64748b;font-size:11px;font-family:inherit"><option value="">All industries</option></select>
+        <select id="mycust-location-filter" onchange="renderMyCustomers()" style="padding:5px 10px;border-radius:20px;border:1px solid #e2e8f0;background:#f8fafc;color:#64748b;font-size:11px;font-family:inherit"><option value="">All locations</option></select>
+      </div>
+      <div class="card add-cust-form" id="add-cust-form">
+        <div class="ct">New customer</div>
+        <div class="field"><label>Company name</label><input type="text" id="newcust-name" placeholder="Acme Ltd"></div>
+        <div class="field"><label>Sector</label><input type="text" id="newcust-sector" placeholder="Retail, construction, technology..."></div>
+        <div class="field"><label>Location</label><input type="text" id="newcust-location" placeholder="Edinburgh"></div>
+        <div class="field"><label>Contact email</label><input type="email" id="newcust-email" placeholder="contact@company.co.uk"></div>
+        <div style="display:flex;gap:8px"><button class="btn btn-o" onclick="toggleAddCustomer()">Cancel</button><button class="btn btn-g" style="flex:1" onclick="saveNewCustomer()">Save customer</button></div>
+      </div>
+      <div class="card" id="mycust-list"></div>
+    </div>
+
+    <!-- CUSTOMER PROFILE -->
+    <div class="pg crm-page" id="pg-customer-detail">
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:.75rem;cursor:pointer;color:#64748b;font-size:12px" onclick="pg('customers',document.querySelector('.ni[onclick*=customers]'))">← Back to my customers</div>
+      <div id="cust-detail-body"></div>
+    </div>
+
+    <!-- MEETINGS -->
+    <div class="pg crm-page" id="pg-meetings">
+      <div class="pg-title">📅 Meetings</div>
+      <div class="pg-sub">Meetings with your customers</div>
+      <div style="display:flex;gap:8px;margin-bottom:1rem">
+        <button class="hol-tab on" onclick="meetTab('upcoming',this)">Upcoming</button>
+        <button class="hol-tab" onclick="meetTab('past',this)">Past</button>
+        <button class="btn btn-p" style="margin-left:auto" onclick="openScheduler(null)">➕ Schedule meeting</button>
+      </div>
+      <div id="meet-tab-upcoming"><div class="card" id="meet-list-upcoming"></div></div>
+      <div id="meet-tab-past" style="display:none"><div class="card" id="meet-list-past"></div></div>
+    </div>
+
+    <!-- MEETING DETAIL -->
+    <div class="pg crm-page" id="pg-meeting-detail">
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:.75rem;cursor:pointer;color:#64748b;font-size:12px" onclick="pg('meetings',document.querySelector('.ni[onclick*=meetings]'))">← Back to meetings</div>
+      <div id="meet-detail-body"></div>
+    </div>
+
+    <!-- TASKS -->
+    <div class="pg crm-page" id="pg-tasks">
+      <div class="pg-title">✅ Tasks</div>
+      <div class="pg-sub">Follow-ups across your customer relationships — manual, from meetings, or AI-generated</div>
+      <button class="btn btn-p" style="margin-bottom:1rem" onclick="toggleAddTask()">➕ Add task</button>
+      <div class="card add-cust-form" id="add-task-form">
+        <div class="ct">New task</div>
+        <div class="field"><label>Task</label><input type="text" id="newtask-text" placeholder="e.g. Call to confirm renewal date"></div>
+        <div class="field"><label>Customer</label><select id="newtask-customer" onchange="updateTaskContactOptions()"></select></div>
+        <div class="field"><label>Contact <span style="font-weight:400;color:#94a3b8">— optional</span></label><select id="newtask-contact"><option value="">No specific contact</option></select></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <div class="field"><label>Due date</label><input type="date" id="newtask-due"></div>
+          <div class="field"><label>Priority</label><select id="newtask-priority"><option value="normal">Normal</option><option value="high">High</option></select></div>
+        </div>
+        <div style="display:flex;gap:8px"><button class="btn btn-o" onclick="toggleAddTask()">Cancel</button><button class="btn btn-g" style="flex:1" onclick="saveNewTask()">Save task</button></div>
+      </div>
+      <div class="customer-filter-row" id="task-filters">
+        <div class="customer-filter-chip on" data-filter="all" onclick="setTaskFilter('all',this)">All</div>
+        <div class="customer-filter-chip" data-filter="today" onclick="setTaskFilter('today',this)">Today</div>
+        <div class="customer-filter-chip" data-filter="overdue" onclick="setTaskFilter('overdue',this)">Overdue</div>
+        <div class="customer-filter-chip" data-filter="week" onclick="setTaskFilter('week',this)">This week</div>
+        <div class="customer-filter-chip" data-filter="completed" onclick="setTaskFilter('completed',this)">Completed</div>
+      </div>
+      <div class="card" id="task-list"></div>
+    </div>
+
+    <!-- OPPORTUNITIES PIPELINE -->
+    <div class="pg crm-page" id="pg-opportunities">
+      <div class="pg-title">📈 Opportunities</div>
+      <div class="pg-sub">Revenue opportunities the AI has spotted, or that you've added yourself</div>
+      <button class="btn btn-p" style="margin-bottom:1rem" onclick="toggleAddOpp()">➕ Add opportunity</button>
+      <div class="card add-cust-form" id="add-opp-form">
+        <div class="ct">New opportunity</div>
+        <div class="field"><label>Customer</label><select id="newopp-customer"></select></div>
+        <div class="field"><label>Description</label><input type="text" id="newopp-desc" placeholder="e.g. Interested in the Courses Centre add-on"></div>
+        <div class="field"><label>Estimated value (£/month)</label><input type="number" id="newopp-value" placeholder="99"></div>
+        <div class="field"><label>Expected close date <span style="font-weight:400;color:#94a3b8">— optional</span></label><input type="date" id="newopp-close"></div>
+        <div style="display:flex;gap:8px"><button class="btn btn-o" onclick="toggleAddOpp()">Cancel</button><button class="btn btn-g" style="flex:1" onclick="saveNewOpportunity()">Save opportunity</button></div>
+      </div>
+      <div id="opp-pipeline"></div>
+    </div>
+
+    <!-- MY REFLECTION (private, wellbeing) -->
+    <div class="pg" id="pg-reflection">
+      <div class="pg-title">🪞 My reflection</div>
+      <div class="pg-sub">A private space just for you — never shown to your manager or anyone else</div>
+      <div class="card" style="background:#f0fdf4;border-color:#bbf7d0">
+        <div style="font-size:12px;color:#16a34a;font-weight:600;margin-bottom:.5rem">🔒 Only visible to you</div>
+        <div style="font-size:13px;color:#334155;line-height:1.7">Over the last 8 weeks your check-ins show a gentle upward trend — you've reported feeling better more often than not recently, and your most recent few weeks have been some of your best. It's worth noticing what's been different lately, even in small ways, since those are usually the things worth protecting.</div>
+      </div>
+      <div class="card">
+        <div class="ct">Your mood, just for you</div>
+        <div id="reflection-chart" style="display:flex;align-items:flex-end;gap:6px;height:70px;padding-top:8px"></div>
+        <div style="font-size:11px;color:#94a3b8;margin-top:6px">This is generated from your own check-ins. It is never linked to your name or shown to your manager.</div>
+      </div>
+    </div>
+
+    <!-- SCHEDULE MEETING MODAL -->
+    <!-- GLOBAL SEARCH PALETTE -->
+    <div id="search-overlay" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,.45);z-index:300;align-items:flex-start;justify-content:center;padding-top:10vh" onclick="if(event.target===this)closeSearchPalette()">
+      <div style="background:white;border-radius:14px;width:100%;max-width:540px;max-height:70vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 20px 50px rgba(0,0,0,.25)">
+        <div style="padding:.75rem 1rem;border-bottom:1px solid #f1f5f9">
+          <input type="text" id="search-input" placeholder="Search customers, contacts, meetings, tasks, opportunities..." oninput="runGlobalSearch()" style="width:100%;border:none;outline:none;font-size:15px;font-family:inherit;padding:6px 0">
+        </div>
+        <div id="search-results" style="overflow-y:auto;padding:.5rem"></div>
+      </div>
+    </div>
+
+    <div id="scheduler-overlay" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,.45);z-index:200;align-items:center;justify-content:center" onclick="if(event.target===this)closeScheduler()">
+      <div style="background:white;border-radius:14px;padding:1.5rem;width:400px;max-width:90vw;max-height:85vh;overflow-y:auto">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem">
+          <div style="font-size:15px;font-weight:600">Schedule a meeting</div>
+          <div style="cursor:pointer;color:#94a3b8;font-size:18px" onclick="closeScheduler()">×</div>
+        </div>
+        <div class="field"><label>Customer</label><select id="sched-customer"></select></div>
+        <div class="field"><label>Meeting type</label>
+          <select id="sched-purpose">
+            <option>Customer review</option><option>Sales meeting</option><option>Product/service discussion</option>
+            <option>Support meeting</option><option>Renewal meeting</option><option>Check-in</option>
+          </select>
+        </div>
+        <div class="field"><label>Format</label>
+          <select id="sched-format" onchange="toggleVideoFields()"><option value="video">📹 Video call</option><option value="inperson">🤝 In person</option></select>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <div class="field"><label>Date</label><input type="date" id="sched-date"></div>
+          <div class="field"><label>Time</label><input type="time" id="sched-time"></div>
+        </div>
+        <div class="field"><label>Customer contact email</label><input type="email" id="sched-cust-email" placeholder="contact@company.co.uk"></div>
+        <div id="video-fields-wrap">
+          <div class="field"><label>Video platform</label>
+            <select id="sched-platform"><option>Zoom</option><option>Microsoft Teams</option><option>Google Meet</option><option>Other</option></select>
+          </div>
+          <div class="field"><label>Your meeting link <span style="font-weight:400;color:#94a3b8">— your own personal meeting room link</span></label><input type="url" id="sched-link" placeholder="https://zoom.us/j/your-room"></div>
+        </div>
+        <button class="btn btn-g btn-full" onclick="saveScheduledMeeting()">Schedule meeting</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ============================================================
+// SUPERB_CONFIG — mirrors manager.html exactly. Both apps must
+// be flipped together (same DEMO_MODE, same Supabase project) —
+// that's what makes them "one product" rather than two demos
+// that happen to look similar.
+// ============================================================
+var SUPERB_CONFIG = {
+  DEMO_MODE: true,
+  SUPABASE_URL: "YOUR_SUPABASE_URL",
+  SUPABASE_ANON_KEY: "YOUR_SUPABASE_ANON_KEY"
+};
+
+var sb = null;
+if (!SUPERB_CONFIG.DEMO_MODE) {
+  if (SUPERB_CONFIG.SUPABASE_URL === "YOUR_SUPABASE_URL") {
+    console.error("SUPERB_CONFIG.DEMO_MODE is false but Supabase credentials were never filled in. Falling back to demo data so the app doesn't hard-crash — fix SUPERB_CONFIG before launch.");
+    SUPERB_CONFIG.DEMO_MODE = true;
+  } else {
+    sb = window.supabase.createClient(SUPERB_CONFIG.SUPABASE_URL, SUPERB_CONFIG.SUPABASE_ANON_KEY);
+  }
+}
+
+// ------------------------------------------------------------
+// Session — which employee, at which company. In live mode this
+// comes from portal.html's join/return flow (emp_join_data /
+// emp_return_data in localStorage), resolved against the real
+// `employees` row so this person has a stable id — never a name
+// string — for every write that follows.
+// ------------------------------------------------------------
+var SESSION = {
+  companyId: null,
+  employeeId: null,
+  employeeName: 'Alex Morgan',
+  role: null,
+  isRep: false
+};
+
+async function resolveSession() {
+  if (SUPERB_CONFIG.DEMO_MODE) return true; // keep existing demo data as-is
+  var joinData = JSON.parse(localStorage.getItem('emp_join_data') || 'null');
+  var returnData = JSON.parse(localStorage.getItem('emp_return_data') || 'null');
+  var name = (joinData && joinData.name) || (returnData && returnData.name);
+  var code = (joinData && joinData.code) || (returnData && returnData.code);
+  if (!name || !code) { window.location.href = 'portal.html'; return false; }
+
+  var { data: company } = await sb.from('companies').select('*').eq('join_code', code).single();
+  if (!company) { window.location.href = 'portal.html'; return false; }
+  SESSION.companyId = company.id;
+
+  if (joinData) {
+    // First time joining — create the employee row once.
+    var { data: newEmp } = await sb.from('employees')
+      .insert([{company_id: company.id, display_name: name, role: joinData.role, total_allowance: company.default_allowance}])
+      .select().single();
+    SESSION.employeeId = newEmp.id;
+    SESSION.role = newEmp.role;
+    SESSION.isRep = !!joinData.isRep;
+  } else {
+    var { data: existing } = await sb.from('employees').select('*').eq('company_id', company.id).eq('display_name', name).single();
+    if (!existing) { window.location.href = 'portal.html'; return false; }
+    SESSION.employeeId = existing.id;
+    SESSION.role = existing.role;
+  }
+  SESSION.employeeName = name;
+  return true;
+}
+
+// ------------------------------------------------------------
+// DB — every data operation the employee app performs. Demo
+// mode keeps today's exact in-memory behaviour; live mode is
+// scoped to SESSION.companyId / SESSION.employeeId so one
+// employee can never read or write another's data.
+// ------------------------------------------------------------
+var DB = {
+
+  checkins: {
+    submit: async function(mood, note) {
+      if (SUPERB_CONFIG.DEMO_MODE) return; // demo UI already simulates this locally
+      var weekStart = new Date();
+      weekStart.setDate(weekStart.getDate() - weekStart.getDay() + 1);
+      await sb.from('checkins').insert([{
+        company_id: SESSION.companyId, employee_id: SESSION.employeeId,
+        mood: mood, note: note || null, week_start: weekStart.toISOString().slice(0,10)
+      }]);
+    }
+  },
+
+  feedback: {
+    send: async function(isAnonymous, category, message) {
+      if (SUPERB_CONFIG.DEMO_MODE) return;
+      await sb.from('feedback').insert([{
+        company_id: SESSION.companyId,
+        employee_id: SESSION.employeeId, // stored for de-dup / reply routing only, never exposed if anonymous — see privacy.html
+        is_anonymous: isAnonymous, sender_name: isAnonymous ? null : SESSION.employeeName,
+        category: category, message: message
+      }]);
+    },
+    listMine: async function() {
+      if (SUPERB_CONFIG.DEMO_MODE) return [];
+      var { data } = await sb.from('feedback').select('*').eq('employee_id', SESSION.employeeId).order('created_at', {ascending:false});
+      return data || [];
+    }
+  },
+
+  holidays: {
+    request: async function(start, end, daysCount, reason) {
+      if (SUPERB_CONFIG.DEMO_MODE) {
+        var displayStart = new Date(start).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
+        var displayEnd = new Date(end).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
+        myHolidayRequests.unshift({start:displayStart, end:displayEnd, days:daysCount, reason:reason||'', status:'pending'});
+        return;
+      }
+      await sb.from('holiday_requests').insert([{
+        company_id: SESSION.companyId, employee_id: SESSION.employeeId, employee_name: SESSION.employeeName,
+        department: SESSION.role, start_date: start, end_date: end, days_count: daysCount, reason: reason || null
+      }]);
+    },
+    listMine: async function() {
+      if (SUPERB_CONFIG.DEMO_MODE) return myHolidayRequests;
+      var { data } = await sb.from('holiday_requests').select('*').eq('employee_id', SESSION.employeeId).order('created_at', {ascending:false});
+      return data || [];
+    }
+  },
+
+  allowance: {
+    mine: async function() {
+      if (SUPERB_CONFIG.DEMO_MODE) {
+        var used = myHolidayRequests.filter(function(h){return h.status==='approved';}).reduce(function(s,h){return s+h.days;},0);
+        var pending = myHolidayRequests.filter(function(h){return h.status==='pending';}).reduce(function(s,h){return s+h.days;},0);
+        return {total: myAllowanceTotal, used:used, pending:pending};
+      }
+      var { data: emp } = await sb.from('employees').select('total_allowance').eq('id', SESSION.employeeId).single();
+      var { data: mine } = await sb.from('holiday_requests').select('days_count,status').eq('employee_id', SESSION.employeeId);
+      var used = (mine||[]).filter(function(h){return h.status==='approved';}).reduce(function(s,h){return s+h.days_count;},0);
+      var pending = (mine||[]).filter(function(h){return h.status==='pending';}).reduce(function(s,h){return s+h.days_count;},0);
+      return {total: emp ? emp.total_allowance : 28, used:used, pending:pending};
+    }
+  },
+
+  oneToOnes: {
+    listMine: async function() {
+      if (SUPERB_CONFIG.DEMO_MODE) return myOneToOnes;
+      var { data } = await sb.from('one_to_ones').select('*, one_to_one_actions(*)').eq('employee_id', SESSION.employeeId).order('scheduled_at', {ascending:false});
+      return data || [];
+    },
+    toggleAction: async function(actionId, done) {
+      if (SUPERB_CONFIG.DEMO_MODE) return; // demo UI mutates myOneToOnes directly
+      await sb.from('one_to_one_actions').update({done:done}).eq('id', actionId);
+    }
+  },
+
+  recognition: {
+    listMine: async function() {
+      if (SUPERB_CONFIG.DEMO_MODE) return myRecognitions;
+      var { data } = await sb.from('recognitions').select('*').eq('employee_id', SESSION.employeeId).order('created_at', {ascending:false});
+      return data || [];
+    }
+  },
+
+  regulations: {
+    list: async function() {
+      if (SUPERB_CONFIG.DEMO_MODE) return null; // demo page is static markup, unchanged
+      var { data } = await sb.from('regulations').select('*').eq('company_id', SESSION.companyId).order('created_at', {ascending:false});
+      return data || [];
+    }
+  },
+
+  courses: {
+    list: async function() {
+      if (SUPERB_CONFIG.DEMO_MODE) return courseData;
+      var { data: allCourses } = await sb.from('courses').select('*').eq('company_id', SESSION.companyId);
+      var { data: mine } = await sb.from('course_completions').select('course_id').eq('employee_id', SESSION.employeeId);
+      var doneIds = (mine||[]).map(function(c){return c.course_id;});
+      return (allCourses||[]).map(function(c){
+        return {id:c.id, icon:'📖', title:c.title, cat:c.category, content:c.content, done: doneIds.indexOf(c.id) > -1};
+      });
+    },
+    markComplete: async function(courseId) {
+      if (SUPERB_CONFIG.DEMO_MODE) return;
+      await sb.from('course_completions').insert([{course_id:courseId, employee_id:SESSION.employeeId}]);
+    }
+  },
+
+  // ============================================
+  // CRM — same schema and normalization pattern as manager.html's
+  // DB.customers/tasks/meetings. Health score stays computed
+  // client-side by getCustomerHealth() in both modes. Every id
+  // embedded in an onclick string below is quoted from the start —
+  // manager.html shipped that bug once already, not repeating it here.
+  // "External intelligence" (news/Companies House/AI estimate) is
+  // fabricated demo content with no real data source — not wired to
+  // anything here on purpose. See LAUNCH_CHECKLIST.md.
+  // ============================================
+  customers: {
+    list: async function() {
+      if (SUPERB_CONFIG.DEMO_MODE) return customers;
+      var { data } = await sb.from('customers').select('*, employees(display_name)').eq('company_id', SESSION.companyId);
+      return (data||[]).map(function(c){
+        return {
+          id: c.id, name: c.name, sector: c.sector, location: c.location,
+          rep: c.employees ? c.employees.display_name : null,
+          mrr: c.mrr, since: c.customer_since ? new Date(c.customer_since).toLocaleDateString('en-GB',{month:'short',year:'numeric'}) : '',
+          lastContact: c.last_contact_at ? daysAgoLabel(c.last_contact_at) : 'No contact recorded',
+          summary: c.ai_summary || ''
+        };
+      });
+    },
+    add: async function(name, sector, location) {
+      if (SUPERB_CONFIG.DEMO_MODE) {
+        var newId = Math.max.apply(null, customers.map(function(c){return c.id;})) + 1;
+        var rec = {id:newId, name:name, sector:sector||'General', location:location||'', rep:repName, mrr:0, since:'Today', lastContact:'Today', summary:'No meetings or notes yet — this is a newly added customer.'};
+        customers.push(rec);
+        return rec;
+      }
+      var { data } = await sb.from('customers').insert([{company_id:SESSION.companyId, name:name, sector:sector||'General', location:location||'', rep_employee_id:SESSION.employeeId, last_contact_at:new Date().toISOString()}]).select().single();
+      return data;
+    },
+    notes: async function(customerId) {
+      if (SUPERB_CONFIG.DEMO_MODE) return custNotes[customerId] || [];
+      var { data } = await sb.from('customer_notes').select('*').eq('customer_id', customerId).order('created_at',{ascending:false});
+      return (data||[]).map(function(n){ return {text:n.text, author:'Note', date:new Date(n.created_at).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})}; });
+    },
+    timeline: async function(customerId) {
+      if (SUPERB_CONFIG.DEMO_MODE) return custTimeline[customerId] || [];
+      var notesR = await sb.from('customer_notes').select('*').eq('customer_id', customerId);
+      var meetsR = await sb.from('meetings').select('*').eq('customer_id', customerId);
+      var tasksR = await sb.from('tasks').select('*').eq('customer_id', customerId).eq('done', true);
+      var events = [];
+      (notesR.data||[]).forEach(function(n){ events.push({type:'note', text:'Note added — '+n.text.substring(0,40)+(n.text.length>40?'…':''), sub:new Date(n.created_at).toLocaleDateString('en-GB'), ts:n.created_at}); });
+      (meetsR.data||[]).forEach(function(m){ events.push({type:'meeting', text:'Meeting — '+(m.purpose||''), sub:new Date(m.scheduled_at).toLocaleDateString('en-GB')+' · '+m.status, ts:m.scheduled_at}); });
+      (tasksR.data||[]).forEach(function(t){ events.push({type:'task', text:'Task completed — '+t.text, sub:'', ts:t.created_at}); });
+      events.sort(function(a,b){ return new Date(b.ts)-new Date(a.ts); });
+      return events;
+    },
+    addNote: async function(customerId, text) {
+      if (SUPERB_CONFIG.DEMO_MODE) {
+        if(!custNotes[customerId]) custNotes[customerId]=[];
+        custNotes[customerId].unshift({text:text, author:'You', date:'Today'});
+        if(!custTimeline[customerId]) custTimeline[customerId]=[];
+        custTimeline[customerId].unshift({type:'note', text:'Note added — '+text.substring(0,40)+(text.length>40?'…':''), sub:'Today · You', source:'human'});
+        return;
+      }
+      await sb.from('customer_notes').insert([{customer_id:customerId, author_employee_id:SESSION.employeeId, text:text}]);
+    },
+    updateSummary: async function(customerId, text) {
+      if (SUPERB_CONFIG.DEMO_MODE) {
+        var c = customers.find(function(x){return x.id===customerId;});
+        if (c) c.summary = text;
+        return;
+      }
+      await sb.from('customers').update({ai_summary:text}).eq('id', customerId);
+    }
+  },
+
+  contacts: {
+    list: async function(customerId) {
+      if (SUPERB_CONFIG.DEMO_MODE) return custContacts[customerId] || [];
+      var { data } = await sb.from('customer_contacts').select('*').eq('customer_id', customerId);
+      return (data||[]).map(function(c){ return {id:c.id, name:c.name, title:c.title, email:c.email, primary:c.is_primary}; });
+    },
+    add: async function(customerId, name, title, email) {
+      if (SUPERB_CONFIG.DEMO_MODE) {
+        if(!custContacts[customerId]) custContacts[customerId] = [];
+        var makesPrimary = custContacts[customerId].length === 0;
+        custContacts[customerId].push({name:name, title:title||'Contact', email:email, primary:makesPrimary});
+        return;
+      }
+      var existing = await sb.from('customer_contacts').select('id').eq('customer_id', customerId);
+      var makesPrimary = !(existing.data && existing.data.length);
+      await sb.from('customer_contacts').insert([{customer_id:customerId, name:name, title:title||'Contact', email:email, is_primary:makesPrimary}]);
+    }
+  },
+
+  tasks: {
+    list: async function() {
+      if (SUPERB_CONFIG.DEMO_MODE) return tasks;
+      var { data } = await sb.from('tasks').select('*, customers(name), employees(display_name)').eq('company_id', SESSION.companyId);
+      return (data||[]).map(function(t){
+        return {id:t.id, custId:t.customer_id, custName:t.customers?t.customers.name:'Internal', text:t.text, rep:t.employees?t.employees.display_name:'', due:t.due_date?new Date(t.due_date).toLocaleDateString('en-GB',{day:'numeric',month:'short'}):'', urgent:t.urgent, done:t.done, source:t.source, contactName:t.contact_name};
+      });
+    },
+    complete: async function(id) {
+      if (SUPERB_CONFIG.DEMO_MODE) { var t=tasks.find(function(x){return x.id===id;}); if(t) t.done=true; return; }
+      await sb.from('tasks').update({done:true}).eq('id', id);
+    },
+    create: async function(fields) {
+      if (SUPERB_CONFIG.DEMO_MODE) {
+        var newId = (tasks.length?Math.max.apply(null,tasks.map(function(t){return t.id;})):0)+1;
+        var rec = {id:newId, custId:fields.customerId||null, custName:fields.custName||'Internal', text:fields.text, rep:fields.repName, due:fields.due||'This week', urgent:!!fields.urgent, done:false, source:fields.source||'Manual', contactName:fields.contactName||null};
+        tasks.push(rec);
+        return rec;
+      }
+      var { data } = await sb.from('tasks').insert([{company_id:SESSION.companyId, customer_id:fields.customerId||null, rep_employee_id:SESSION.employeeId, contact_name:fields.contactName||null, text:fields.text, due_date:fields.dueDate||null, urgent:!!fields.urgent, source:fields.source||'Manual'}]).select().single();
+      return data;
+    }
+  },
+
+  meetings: {
+    list: async function() {
+      if (SUPERB_CONFIG.DEMO_MODE) return meetings;
+      var { data } = await sb.from('meetings').select('*, customers(name), employees(display_name)').eq('company_id', SESSION.companyId);
+      return (data||[]).map(function(m){
+        var d = new Date(m.scheduled_at);
+        return {id:m.id, custId:m.customer_id, custName:m.customers?m.customers.name:'', rep:m.employees?m.employees.display_name:'', purpose:m.purpose, format:m.format, date:d.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}), time:d.toTimeString().slice(0,5), status:m.status, notes:m.notes, sentiment:m.sentiment, custEmail:m.customer_email, platform:m.platform, meetingLink:m.meeting_link, managerNote:m.manager_note};
+      });
+    },
+    create: async function(fields) {
+      // fields: {customerId, custName, purpose, format, dateStr, time, custEmail, platform, meetingLink}
+      if (SUPERB_CONFIG.DEMO_MODE) {
+        var newId = (meetings.length ? Math.max.apply(null, meetings.map(function(m){return m.id;})) : 0) + 1;
+        var displayDate = new Date(fields.dateStr).toLocaleDateString('en-GB', {day:'numeric', month:'short', year:'numeric'});
+        var rec = {id:newId, custId:fields.customerId, custName:fields.custName, rep:repName, purpose:fields.purpose, format:fields.format, date:displayDate, time:fields.time, status:'upcoming', notes:'', custEmail:fields.custEmail, platform:fields.platform, meetingLink:fields.meetingLink, managerNote:''};
+        meetings.push(rec);
+        return rec;
+      }
+      var scheduledAt = new Date(fields.dateStr+'T'+fields.time+':00').toISOString();
+      var { data } = await sb.from('meetings').insert([{company_id:SESSION.companyId, customer_id:fields.customerId, rep_employee_id:SESSION.employeeId, purpose:fields.purpose, format:fields.format, scheduled_at:scheduledAt, status:'upcoming', customer_email:fields.custEmail, platform:fields.platform, meeting_link:fields.meetingLink}]).select().single();
+      return data;
+    },
+    // Saves the outcome of a completed meeting — approved AI summary
+    // text and sentiment. Live transcription/AI generation itself stays
+    // client-simulated (see generateAiSummary) — only the approved
+    // result is persisted here, matching the "manager/rep approves
+    // before it saves" flow already in the UI.
+    complete: async function(id, notes, sentiment) {
+      if (SUPERB_CONFIG.DEMO_MODE) return;
+      await sb.from('meetings').update({status:'completed', notes:notes, sentiment:sentiment}).eq('id', id);
+    }
+  },
+
+  opportunities: {
+    list: async function() {
+      if (SUPERB_CONFIG.DEMO_MODE) return opportunities;
+      var { data } = await sb.from('opportunities').select('*, customers(name)').eq('company_id', SESSION.companyId);
+      return (data||[]).map(function(o){
+        return {id:o.id, custId:o.customer_id, custName:o.customers?o.customers.name:'', desc:o.description, value:o.value, stage:o.stage, closeDate:o.close_date||''};
+      });
+    },
+    add: async function(customerId, custName, desc, value, closeDate) {
+      if (SUPERB_CONFIG.DEMO_MODE) {
+        var newId = (opportunities.length ? Math.max.apply(null, opportunities.map(function(o){return o.id;})) : 0) + 1;
+        var rec = {id:newId, custId:customerId, custName:custName, desc:desc, value:value, stage:'identified', closeDate:closeDate||''};
+        opportunities.push(rec);
+        return rec;
+      }
+      var { data } = await sb.from('opportunities').insert([{company_id:SESSION.companyId, customer_id:customerId, description:desc, value:value, stage:'identified', close_date:closeDate||null}]).select().single();
+      return data;
+    },
+    setStage: async function(id, stage) {
+      if (SUPERB_CONFIG.DEMO_MODE) { var o=opportunities.find(function(x){return x.id===id;}); if(o) o.stage=stage; return; }
+      await sb.from('opportunities').update({stage:stage}).eq('id', id);
+    }
+  }
+};
+
+function daysAgoLabel(isoTimestamp) {
+  var days = Math.floor((Date.now() - new Date(isoTimestamp).getTime()) / 86400000);
+  if (days <= 0) return 'Today';
+  if (days === 1) return '1 day ago';
+  return days + ' days ago';
+}
+
+// ============================================================
+// Demo data for My 1-to-1s / Recognition. NOTE: this is a
+// separate in-memory copy from manager.html's demo data — the
+// two static files are independent page loads and cannot share
+// state in demo mode. They will only be genuinely in sync once
+// DEMO_MODE is false and both point at the same Supabase tables.
+// See LAUNCH_CHECKLIST.md.
+// ============================================================
+var myOneToOnes = [
+  {id:1, date:'Tomorrow', time:'10:00', status:'upcoming', notes:'', actions:[]},
+  {id:2, date:'18 Jun 2026', time:'11:30', status:'completed',
+    notes:'Talked through the current workload and upcoming step challenge. Agreed a couple of follow-ups.',
+    actions:[{id:'a1',text:'Share step challenge signup link with the Marketing team',done:true},{id:'a2',text:'Look into the advanced Excel course for reporting work',done:false}]}
+];
+
+var myRecognitions = [
+  {id:1, message:'Really enjoyed how you handled onboarding two new teammates this month — thank you for stepping up.', date:'2 weeks ago'}
+];
+
+var myHolidayRequests = [
+  {start:'14 Jul 2026', end:'18 Jul 2026', days:5, reason:'Family holiday', status:'pending'},
+  {start:'3 Jun 2026', end:'7 Jun 2026', days:5, reason:'Annual leave', status:'approved'},
+  {start:'2 Feb 2026', end:'2 Feb 2026', days:1, reason:'Medical appointment', status:'approved'}
+];
+var myAllowanceTotal = 28;
+
+// Demo fallback content — shown when DB.regulations.list() returns null
+// (demo mode). In live mode this is entirely replaced by what the
+// manager has actually uploaded.
+var demoRegulations = [
+  {title:'Health and Safety Policy', content:'All employees are responsible for maintaining a safe working environment. Report any hazards to your line manager immediately. Personal protective equipment must be worn on site at all times. In the event of an emergency, follow the evacuation procedure posted at each fire exit. Safety inspections are carried out monthly and any concerns raised will be addressed within 5 working days.'},
+  {title:'Remote Working Policy', content:'Employees may work remotely up to 3 days per week with prior agreement from their manager. A suitable, safe workspace must be maintained at home. You are expected to be contactable during core hours of 9am to 4pm. Equipment provided by the company must be used for work purposes only and returned when employment ends.'},
+  {title:'Equality and Diversity Policy', content:'Acme Construction is committed to providing equal opportunities for all employees regardless of age, disability, gender, race, religion, or any other protected characteristic. Discrimination, harassment, or victimisation of any kind will not be tolerated and may result in disciplinary action up to and including dismissal.'}
+];
+
+async function renderMyRegulations() {
+  var list = await DB.regulations.list();
+  if (!list) list = demoRegulations; // demo mode
+  var html = '';
+  list.forEach(function(r){
+    html += '<div class="ri"><div><div class="ri-txt" style="font-weight:500;font-size:13px">'+escHtml(r.title)+'</div><div class="ri-txt" style="margin-top:4px;color:#475569">'+escHtml(r.content)+'</div></div></div>';
+  });
+  document.getElementById('reg-list-employee').innerHTML = html || '<div class="empty">No policies uploaded yet.</div>';
+}
+
+var selectedMood = null;
+var isAnon = true;
+var empCalYear = new Date().getFullYear();
+var empCalMonth = new Date().getMonth();
+
+// Demo data — teammates in Marketing department
+var teamHolidays = [
+  {name:'Alex M. (you)', start:'2026-07-14', end:'2026-07-18', status:'pending', isMe:true},
+  {name:'Alex M. (you)', start:'2026-06-03', end:'2026-06-07', status:'approved', isMe:true},
+  {name:'Drew H.', start:'2026-07-07', end:'2026-07-11', status:'approved', isMe:false},
+  {name:'Drew H.', start:'2026-08-03', end:'2026-08-07', status:'approved', isMe:false},
+  {name:'Sam K.', start:'2026-07-21', end:'2026-07-25', status:'approved', isMe:false},
+  {name:'Robin P.', start:'2026-07-28', end:'2026-08-01', status:'pending', isMe:false}
+];
+
+var teamMembers = ['Alex M. (you)', 'Drew H.', 'Sam K.', 'Robin P.'];
+
+function empHolTab(tab, btn) {
+  document.getElementById('emp-hol-request').style.display = tab === 'request' ? 'block' : 'none';
+  document.getElementById('emp-hol-mine').style.display = tab === 'mine' ? 'block' : 'none';
+  document.getElementById('emp-hol-team').style.display = tab === 'team' ? 'block' : 'none';
+  document.querySelectorAll('.emp-hol-tab').forEach(function(b){ b.classList.remove('on'); });
+  btn.classList.add('on');
+  if (tab === 'team') renderEmpCal();
+  if (tab === 'mine') renderMyHolidays();
+}
+
+async function renderMyHolidays() {
+  var list = await DB.holidays.listMine();
+  var allowance = await DB.allowance.mine();
+  var remaining = allowance.total - allowance.used - allowance.pending;
+  var pct = Math.min(100, Math.round((allowance.used / allowance.total) * 100));
+
+  var summaryHtml = '<div style="display:flex;align-items:center;gap:12px;margin-bottom:4px">';
+  summaryHtml += '<div style="font-size:26px;font-weight:600;color:#16a34a">'+remaining+'</div>';
+  summaryHtml += '<div style="font-size:12px;color:#64748b;line-height:1.5">days remaining<br>of '+allowance.total+' total for 2026</div>';
+  summaryHtml += '</div><div class="prog-t" style="margin-top:8px"><div class="prog-f" style="width:'+pct+'%;background:#16a34a"></div></div>';
+  summaryHtml += '<div style="font-size:11px;color:#94a3b8;margin-top:4px">'+allowance.used+' days used'+(allowance.pending?' · '+allowance.pending+' pending approval':'')+'</div>';
+  document.getElementById('my-allowance-summary').innerHTML = summaryHtml;
+
+  var html = '';
+  list.forEach(function(h){
+    var start = h.start || (h.start_date ? new Date(h.start_date).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}) : '');
+    var end = h.end || (h.end_date ? new Date(h.end_date).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}) : '');
+    var days = h.days || h.days_count;
+    var reason = h.reason || '';
+    var status = h.status;
+    html += '<div class="ri" style="justify-content:space-between"><div><div class="ri-txt" style="font-weight:500">'+escHtml(start)+' – '+escHtml(end)+'</div><div class="ri-sub">'+days+' day'+(days!==1?'s':'')+(reason?' · '+escHtml(reason):'')+'</div></div><span class="hsp hsp-'+(status==='pending'?'p':status==='approved'?'a':'d')+'">'+escHtml(status)+'</span></div>';
+  });
+  document.getElementById('my-hol-requests').innerHTML = html || '<div class="empty">No holiday requests yet.</div>';
+}
+
+function empCalNav(dir) {
+  empCalMonth += dir;
+  if (empCalMonth > 11) { empCalMonth = 0; empCalYear++; }
+  if (empCalMonth < 0) { empCalMonth = 11; empCalYear--; }
+  renderEmpCal();
+}
+
+function renderEmpCal() {
+  var monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  var daysInMonth = new Date(empCalYear, empCalMonth + 1, 0).getDate();
+  var today = new Date();
+  document.getElementById('emp-cal-title').textContent = monthNames[empCalMonth] + ' ' + empCalYear;
+
+  // Build holiday map: name -> day -> status
+  var holMap = {};
+  teamHolidays.forEach(function(h) {
+    var sd = new Date(h.start);
+    var ed = new Date(h.end);
+    var cur = new Date(sd);
+    while (cur <= ed) {
+      if (cur.getMonth() === empCalMonth && cur.getFullYear() === empCalYear) {
+        if (!holMap[h.name]) holMap[h.name] = {};
+        holMap[h.name][cur.getDate()] = { status: h.status, isMe: h.isMe };
+      }
+      cur.setDate(cur.getDate() + 1);
+    }
+  });
+
+  var days = [];
+  for (var d = 1; d <= daysInMonth; d++) days.push(d);
+
+  var html = '<div class="emp-cal-grid" style="grid-template-columns:100px repeat(' + daysInMonth + ',1fr)">';
+
+  // Header
+  html += '<div class="ecal-head" style="text-align:left;padding-left:8px">Name</div>';
+  days.forEach(function(d) {
+    var isToday = d === today.getDate() && empCalMonth === today.getMonth() && empCalYear === today.getFullYear();
+    var dow = new Date(empCalYear, empCalMonth, d).getDay();
+    var isWknd = dow === 0 || dow === 6;
+    html += '<div class="ecal-head' + (isToday ? ' today-col' : '') + (isWknd ? ' weekend' : '') + '">' + d + '</div>';
+  });
+
+  // Rows
+  teamMembers.forEach(function(member) {
+    var isMe = member.indexOf('(you)') > -1;
+    html += '<div class="ecal-name' + (isMe ? ' is-me' : '') + '" title="' + member + '">' + member.split(' ')[0] + (isMe ? ' ★' : '') + '</div>';
+    days.forEach(function(d) {
+      var isToday = d === today.getDate() && empCalMonth === today.getMonth() && empCalYear === today.getFullYear();
+      var dow = new Date(empCalYear, empCalMonth, d).getDay();
+      var isWknd = dow === 0 || dow === 6;
+      var entry = holMap[member] && holMap[member][d];
+      var cls = 'ecal-cell';
+      var title = '';
+      if (entry) {
+        if (entry.isMe && entry.status === 'approved') { cls += ' me-off'; title = 'You — approved'; }
+        else if (entry.isMe && entry.status === 'pending') { cls += ' me-pend'; title = 'You — pending approval'; }
+        else if (entry.status === 'approved') { cls += ' off'; title = member + ' — approved'; }
+        else if (entry.status === 'pending') { cls += ' pending'; title = member + ' — pending approval'; }
+      } else if (isToday) { cls += ' today-col'; }
+      else if (isWknd) { cls += ' weekend'; }
+      html += '<div class="' + cls + '" title="' + title + '"></div>';
+    });
+  });
+
+  html += '</div>';
+  document.getElementById('emp-cal-grid').innerHTML = html;
+}
+
+var lbData = [
+  {name:'Jamie T.',steps:71200,goal:60000},
+  {name:'Morgan S.',steps:64800,goal:60000},
+  {name:'Alex M. (you)',steps:58300,goal:60000,me:true},
+  {name:'Casey L.',steps:52100,goal:60000},
+  {name:'Drew H.',steps:49600,goal:60000}
+];
+
+var courseData = [
+  {icon:'🏥',title:'First Aid Basics',cat:'Health and Safety',content:'This course covers the fundamental principles of first aid in the workplace. You will learn how to assess an emergency situation, call for help, perform CPR, treat cuts and wounds, recognise signs of a heart attack or stroke, and deal with choking. Upon completion you will be confident responding to common workplace medical emergencies. Always remember: your safety comes first before assisting others.',done:true},
+  {icon:'🪑',title:'Correct Sitting Posture',cat:'Posture',content:'Poor posture is one of the leading causes of back pain and musculoskeletal issues in office workers. This course teaches you how to set up your workstation correctly. Your monitor should be at eye level, your feet flat on the floor, and your elbows at 90 degrees. Take a short break from your screen every 30 minutes and stretch regularly. A lumbar support cushion can make a significant difference if you sit for long periods.',done:true},
+  {icon:'🔥',title:'Fire Safety Awareness',cat:'Fire Safety',content:'All employees must know the fire evacuation procedure. Learn where the fire exits are in your building, where the assembly point is, how to raise the alarm, and how to use a fire extinguisher safely. Never use lifts during an evacuation. Do not return to the building until the all-clear is given. Fire drills are carried out twice a year — take them seriously.',done:false},
+  {icon:'🧠',title:'Mental Health First Aid',cat:'Mental Health',content:'This course helps you recognise signs that a colleague may be struggling with their mental health, and gives you the confidence to start a supportive conversation. You will learn about common mental health conditions, how to listen without judgment, what support is available, and when to escalate concerns. Mental health is just as important as physical health — looking out for your colleagues matters.',done:true},
+  {icon:'💚',title:'Managing Workplace Stress',cat:'Wellbeing',content:'This course explores practical techniques for managing stress at work. You will learn to identify your personal stress triggers, set healthy boundaries, use breathing and mindfulness techniques, prioritise your workload effectively, and when to ask for help. Stress is not a sign of weakness — knowing how to manage it is a strength. Regular breaks, exercise, and talking to someone you trust all make a real difference.',done:true},
+  {icon:'📖',title:'GDPR and Data Protection',cat:'General',content:'All employees who handle personal data must complete this course. You will learn what GDPR is, what counts as personal data, how to store and share data safely, your responsibilities under data protection law, and what to do if you suspect a data breach. Never share personal data by email unless it is encrypted. Report any concerns to your manager or Data Protection Officer immediately.',done:false}
+];
+
+function pg(id, el) {
+  document.querySelectorAll('.pg').forEach(function(p){p.classList.remove('on');});
+  document.querySelectorAll('.ni').forEach(function(n){n.classList.remove('on');});
+  document.getElementById('pg-'+id).classList.add('on');
+  if(el) el.classList.add('on');
+  closeMobileNav();
+}
+
+function toggleMobileNav() {
+  document.getElementById('sidebar').classList.toggle('mobile-open');
+  document.getElementById('mobile-nav-overlay').classList.toggle('show');
+}
+
+function closeMobileNav() {
+  document.getElementById('sidebar').classList.remove('mobile-open');
+  document.getElementById('mobile-nav-overlay').classList.remove('show');
+}
+
+function escHtml(str) {
+  if(!str) return '';
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function pickMood(el, val) {
+  document.querySelectorAll('.emj').forEach(function(e){e.classList.remove('on');});
+  el.classList.add('on');
+  selectedMood = val;
+}
+
+async function submitCheckin() {
+  if(!selectedMood){alert('Please select how your week has felt first');return;}
+  var note = document.getElementById('ci-note').value.trim();
+  await DB.checkins.submit(selectedMood, note);
+  document.getElementById('ci-done').style.display='block';
+  document.getElementById('ci-form').style.display='none';
+}
+
+function setAnon(v) {
+  isAnon = v;
+  document.getElementById('anon-btn').classList.toggle('on',v);
+  document.getElementById('named-btn').classList.toggle('on',!v);
+}
+
+function pickTag(el) {
+  document.querySelectorAll('.tag-opt').forEach(function(t){t.classList.remove('on');});
+  el.classList.add('on');
+}
+
+async function sendMessage() {
+  var body = document.getElementById('mail-body').value.trim();
+  if(!body){alert('Please write a message first');return;}
+  var tagEl = document.querySelector('.tag-opt.on');
+  var category = tagEl ? tagEl.textContent.trim() : 'General';
+  await DB.feedback.send(isAnon, category, body);
+  document.getElementById('mail-body').value='';
+  var ok = document.getElementById('mail-ok');
+  ok.textContent = isAnon ? '✓ Message sent anonymously to your manager' : '✓ Message sent as '+SESSION.employeeName;
+  ok.style.display='block';
+  setTimeout(function(){ok.style.display='none';},3500);
+}
+
+function joinChallenge(btn) {
+  btn.textContent='Joined ✓';
+  btn.style.background='#dcfce7';
+  btn.style.color='#16a34a';
+  btn.style.border='1px solid #bbf7d0';
+  btn.disabled=true;
+}
+
+async function requestHoliday() {
+  var s=document.getElementById('hol-start').value;
+  var e=document.getElementById('hol-end').value;
+  var reason=document.getElementById('hol-reason').value.trim();
+  if(!s||!e){alert('Please select start and end dates');return;}
+  var daysCount = Math.round((new Date(e)-new Date(s))/86400000)+1;
+  await DB.holidays.request(s, e, daysCount, reason);
+  document.getElementById('hol-start').value='';
+  document.getElementById('hol-end').value='';
+  document.getElementById('hol-reason').value='';
+  var ok=document.getElementById('hol-ok');
+  ok.style.display='block';
+  setTimeout(function(){ok.style.display='none';},4000);
+  renderMyHolidays();
+}
+
+function renderLeaderboard() {
+  var html='';
+  var cols=['#f59e0b','#94a3b8','#16a34a','#7c3aed','#1d4ed8'];
+  lbData.forEach(function(p,i){
+    var pct=Math.min(100,Math.round((p.steps/p.goal)*100));
+    var meBorder=p.me?' style="border:2px solid #16a34a"':'';
+    html+='<div class="ri" '+meBorder+'>';
+    html+='<div style="width:24px;height:24px;border-radius:50%;background:'+cols[i]+';color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;flex-shrink:0">'+(i+1)+'</div>';
+    html+='<div style="flex:1"><div style="font-size:13px;font-weight:'+(p.me?'600':'400')+'">'+escHtml(p.name)+'</div><div style="font-size:11px;color:#94a3b8">'+Number(p.steps).toLocaleString()+' steps</div></div>';
+    html+='<div style="width:75px"><div class="prog-t" style="margin:0 0 2px"><div class="prog-f" style="width:'+pct+'%"></div></div><div style="font-size:10px;color:#94a3b8;text-align:right">'+pct+'%</div></div>';
+    html+='</div>';
+  });
+  document.getElementById('lb-list').innerHTML=html;
+}
+
+async function renderCourses() {
+  var list = await DB.courses.list();
+  var html='';
+  list.forEach(function(c,i){
+    html+='<div class="course-card">';
+    html+='<div class="co-hdr"><div class="co-icon">'+c.icon+'</div>';
+    html+='<div style="flex:1"><div style="font-size:13px;font-weight:500">'+escHtml(c.title)+'</div>';
+    html+='<div style="font-size:11px;color:#94a3b8">'+escHtml(c.cat)+(c.done?' · ✅ Completed':'')+'</div></div></div>';
+    html+='<div style="font-size:12px;color:#475569;line-height:1.75;margin-bottom:10px">'+escHtml(c.content)+'</div>';
+    if(!c.done){
+      html+='<button class="btn btn-g" style="font-size:12px" data-i="'+i+'" onclick="completeCourse(this)">Mark as complete</button>';
+    } else {
+      html+='<span style="font-size:12px;color:#16a34a;font-weight:500">✅ Completed</span>';
+    }
+    html+='</div>';
+  });
+  document.getElementById('course-list').innerHTML=html || '<div class="empty">No courses assigned yet.</div>';
+}
+
+async function completeCourse(btn) {
+  var i=parseInt(btn.getAttribute('data-i'));
+  if (SUPERB_CONFIG.DEMO_MODE) {
+    courseData[i].done=true;
+  } else {
+    var list = await DB.courses.list();
+    await DB.courses.markComplete(list[i].id);
+  }
+  renderCourses();
+}
+
+function toggleArticle(el) {
+  var body = el.querySelector('.res-body');
+  var isOpen = body.style.display === 'block';
+  document.querySelectorAll('.res-body').forEach(function(b){ b.style.display='none'; });
+  document.querySelectorAll('.res-item').forEach(function(r){ r.style.borderColor=''; r.style.background=''; });
+  if(!isOpen){
+    body.style.display='block';
+    el.style.borderColor='#16a34a';
+    el.style.background='#f0fdf4';
+  }
+}
+
+renderLeaderboard();
+renderCourses();
+
+// ============================================================
+// RELATIONSHIPS — rep-facing CRM
+// This demo employee is logged in as a rep: Jamie T.
+// Only Jamie's own customers, meetings, and tasks are shown.
+// ============================================================
+var repName = 'Jamie T.';
+
+// ============================================
+// Show the Relationships section only for
+// roles that manage customers (set at sign-up
+// on the portal page). Falls back to visible
+// for this demo if no sign-up data is found.
+// ============================================
+(function applyRoleVisibility() {
+  try {
+    var joinData = JSON.parse(localStorage.getItem('emp_join_data') || 'null');
+    if (joinData && joinData.hasOwnProperty('isRep') && !joinData.isRep) {
+      var nav = document.getElementById('relationships-nav');
+      if (nav) nav.style.display = 'none';
+    }
+  } catch(e) { /* no valid sign-up data — leave the demo section visible */ }
+})();
+
+var customers = [
+  {id:1, name:'Loch Industries', sector:'Manufacturing', location:'Edinburgh', rep:'Jamie T.', mrr:348, since:'Jan 2025', lastContact:'3 days ago',
+    summary:'Loch Industries is a strong, engaged customer. You have met with them 6 times this quarter. They recently expressed interest in expanding to their Edinburgh office. Main concern is implementation timeline.'},
+  {id:2, name:'Acme Ltd', sector:'Construction', location:'Glasgow', rep:'Sarah M.', mrr:299, since:'Mar 2025', lastContact:'18 days ago', summary:''},
+  {id:3, name:'Cairn Group', sector:'Retail', location:'Aberdeen', rep:'Marcus K.', mrr:499, since:'Nov 2024', lastContact:'6 days ago', summary:''},
+  {id:4, name:'Tay Logistics', sector:'Logistics', location:'Dundee', rep:'Sarah M.', mrr:299, since:'Feb 2025', lastContact:'1 day ago', summary:''},
+  {id:5, name:'Glen Partners', sector:'Professional services', location:'Edinburgh', rep:'Jamie T.', mrr:149, since:'Jun 2025', lastContact:'9 days ago',
+    summary:'Glen Partners has a contract renewal due in under two weeks. No red flags but worth a proactive call before the renewal date.'},
+  {id:6, name:'Forth Digital', sector:'Technology', location:'Edinburgh', rep:'Marcus K.', mrr:499, since:'Sep 2024', lastContact:'2 days ago', summary:''},
+  {id:7, name:'Border Foods', sector:'Food and drink', location:'Kelso', rep:'Robin P.', mrr:149, since:'Apr 2025', lastContact:'5 days ago', summary:''},
+  {id:8, name:'Highland Retail Co', sector:'Retail', location:'Inverness', rep:'Robin P.', mrr:299, since:'Aug 2025', lastContact:'11 days ago', summary:''}
+];
+
+var custNotes = {
+  1: [
+    {text:'Discussed Edinburgh site expansion — very positive reaction, timeline is the main open question.', author:'Jamie T.', date:'27 Jun 2026'},
+    {text:'Flagged implementation concern before quarterly review — wanted to raise it directly rather than wait.', author:'Jamie T.', date:'25 Jun 2026'}
+  ],
+  5: [
+    {text:'Renewal date confirmed for 12 Jul. No concerns raised so far but want to get ahead of it.', author:'Jamie T.', date:'20 Jun 2026'}
+  ]
+};
+
+var custTimeline = {
+  1: [
+    {type:'meeting', text:'Meeting — quarterly review · Jamie', sub:'27 Jun · expansion discussed · proposal to follow', source:'human'},
+    {type:'note', text:'Note added — implementation concern flagged', sub:'25 Jun · Jamie', source:'human'},
+    {type:'task', text:'Task completed — holiday planner add-on demo sent', sub:'20 Jun · Jamie', source:'human'}
+  ],
+  5: [
+    {type:'note', text:'Note added — renewal date confirmed', sub:'20 Jun · Jamie', source:'human'}
+  ]
+};
+
+// Contacts — a customer can have multiple named people.
+// One contact per customer can be flagged primary.
+var custContacts = {
+  1: [
+    {name:'David Murray', title:'Operations Director', email:'david@lochindustries.co.uk', primary:true}
+  ],
+  5: [
+    {name:'Grace Fyfe', title:'Managing Partner', email:'grace@glenpartners.co.uk', primary:true}
+  ]
+};
+
+function getPrimaryContact(custId) {
+  var list = custContacts[custId] || [];
+  return list.find(function(c){return c.primary;}) || list[0] || null;
+}
+
+function nextMeetingFor(custId) {
+  var upcoming = meetings.filter(function(m){return m.custId===custId && m.status==='upcoming';});
+  return upcoming.length ? upcoming[0] : null;
+}
+
+function openOpportunityValueFor(custId) {
+  return opportunities.filter(function(o){return o.custId===custId && o.stage!=='won' && o.stage!=='lost';})
+    .reduce(function(sum,o){return sum+o.value;}, 0);
+}
+
+var tasks = [
+  {id:1, custId:1, custName:'Loch Industries', text:'Send Edinburgh expansion proposal', rep:'Jamie T.', due:'Fri', urgent:true, done:false, source:'Meeting'},
+  {id:2, custId:1, custName:'Loch Industries', text:'Follow up on implementation timeline concerns', rep:'Jamie T.', due:'Mon', urgent:false, done:false, source:'Meeting'},
+  {id:5, custId:5, custName:'Glen Partners', text:'Proactive call ahead of renewal date', rep:'Jamie T.', due:'Wed', urgent:false, done:false, source:'Manual'}
+];
+
+var meetings = [
+  {id:1, custId:1, custName:'Loch Industries', rep:'Jamie T.', purpose:'Check-in', format:'video', date:'Today', time:'10:00', status:'upcoming', notes:'',
+    custEmail:'david@lochindustries.co.uk', platform:'Zoom', meetingLink:'https://zoom.us/j/8823410567', managerNote:'They are close to saying yes on the Edinburgh expansion — make sure to confirm the implementation timeline before they ask, and have the proposal ready to screen share.'},
+  {id:4, custId:1, custName:'Loch Industries', rep:'Jamie T.', purpose:'Customer review', format:'video', date:'27 Jun 2026', time:'10:04', status:'completed',
+    notes:'Discussed Edinburgh site expansion — very positive reaction. Main concern raised was implementation timeline. Agreed to send a detailed rollout plan by Friday. Pricing for the second location was touched on but not resolved.', sentiment:82}
+];
+
+var externalIntel = {
+  1: {
+    scannedDate: 'Yesterday, 09:00',
+    news: [{headline:'Loch Industries announces plans for second manufacturing site in Edinburgh', source:'Scottish Manufacturing News', date:'2 days ago'}],
+    social: 'Posted on LinkedIn about hiring for the new Edinburgh site — strong engagement, several comments from current employees.',
+    financial: {trend:'up', detail:'Latest Companies House filing shows turnover up 18% year on year.', estimate:'Growth is likely linked to new contract wins in the manufacturing sector — consistent with what they have raised directly about expansion in recent meetings.'}
+  }
+};
+
+var activeCustomerId = null;
+var activeCustTab = 'overview';
+var activeMeetingId = null;
+var healthLabel = {green:'Healthy', amber:'Needs attention', red:'At risk'};
+var healthPillCls = {green:'sp-a', amber:'sp-p', red:'sp-d'};
+var formatLabel = {video:'📹 Video call', inperson:'🤝 In person'};
+var meetingUiState = {};
+
+function myCustomers() { return customers.filter(function(c){return c.rep===repName;}); }
+function myTasks() { return tasks.filter(function(t){return t.rep===repName;}); }
+function myMeetings() { return meetings.filter(function(m){return m.rep===repName;}); }
+
+function parseDaysAgo(text) {
+  if(!text) return 999;
+  var t = text.toLowerCase();
+  if(t.indexOf('today')>-1 || t.indexOf('1 day')>-1) return 1;
+  var m = t.match(/(\d+)\s*day/);
+  return m ? parseInt(m[1]) : 999;
+}
+
+function getCustomerHealth(cust) {
+  var score = 100;
+  var reasons = [];
+  var days = parseDaysAgo(cust.lastContact);
+  if(days > 14){ score -= 35; reasons.push('No contact for ' + days + ' days'); }
+  else if(days > 5){ score -= 15; reasons.push('Last contact was ' + days + ' days ago'); }
+  var openTasks = tasks.filter(function(t){return t.custId===cust.id && !t.done;});
+  var urgentOpen = openTasks.filter(function(t){return t.urgent;});
+  openTasks.forEach(function(t){ score -= t.urgent ? 15 : 5; });
+  if(urgentOpen.length) reasons.push(urgentOpen.length + ' urgent task' + (urgentOpen.length>1?'s':'') + ' outstanding');
+  else if(openTasks.length) reasons.push(openTasks.length + ' open task' + (openTasks.length>1?'s':''));
+  var custMeetings = meetings.filter(function(m){return m.custId===cust.id && m.status==='completed' && typeof m.sentiment==='number';});
+  if(custMeetings.length){
+    var latest = custMeetings[custMeetings.length-1];
+    if(latest.sentiment >= 65){ score += 5; reasons.push('Recent meeting sentiment was positive (' + latest.sentiment + '%)'); }
+    else if(latest.sentiment < 40){ score -= 25; reasons.push('Recent meeting sentiment was low (' + latest.sentiment + '%)'); }
+    else { score -= 10; reasons.push('Recent meeting sentiment was mixed (' + latest.sentiment + '%)'); }
+  }
+  var intel = externalIntel[cust.id];
+  if(intel){
+    if(intel.financial.trend==='down'){ score -= 8; reasons.push('Financial filing shows a downward trend'); }
+    else if(intel.financial.trend==='up'){ score += 5; reasons.push('Financial filing shows a positive trend'); }
+  }
+  score = Math.max(0, Math.min(100, score));
+  var key = score >= 70 ? 'green' : score >= 40 ? 'amber' : 'red';
+  if(!reasons.length) reasons.push('No concerns — recent contact and no open issues');
+  return {score: score, key: key, reasons: reasons};
+}
+
+function updateCrmNavBadges() {
+  document.getElementById('nav-cust-count').textContent = myCustomers().length;
+  document.getElementById('nav-meet-count').textContent = myMeetings().filter(function(m){return m.status==='upcoming';}).length;
+  document.getElementById('nav-task-count').textContent = myTasks().filter(function(t){return !t.done;}).length;
+}
+
+// ============================================
+// CRM Overview — every figure here is derived
+// from the real customer/meeting/task/opportunity
+// data above. Nothing is hard-coded.
+// ============================================
+function renderCrmOverview() {
+  var mine = myCustomers();
+  var healthMap = {};
+  mine.forEach(function(c){ healthMap[c.id] = getCustomerHealth(c); });
+  var healthyCount = mine.filter(function(c){return healthMap[c.id].key==='green';}).length;
+  var attentionCount = mine.filter(function(c){return healthMap[c.id].key==='amber';}).length;
+  var riskCount = mine.filter(function(c){return healthMap[c.id].key==='red';}).length;
+
+  var myMeets = myMeetings();
+  var upcomingMeets = myMeets.filter(function(m){return m.status==='upcoming';});
+  var myOpenTasks = myTasks().filter(function(t){return !t.done;});
+  var myOpps = opportunities.filter(function(o){ return mine.some(function(c){return c.id===o.custId;}); });
+  var openOpps = myOpps.filter(function(o){return o.stage!=='won' && o.stage!=='lost';});
+  var pipelineValue = openOpps.reduce(function(sum,o){return sum+o.value;},0);
+
+  // Top stats
+  var statsHtml = '';
+  var stats = [
+    {l:'Customers', v:mine.length},
+    {l:'At risk', v:riskCount, col:'#dc2626'},
+    {l:'Meetings', v:upcomingMeets.length},
+    {l:'Open tasks', v:myOpenTasks.length},
+    {l:'Open opportunities', v:openOpps.length},
+    {l:'Pipeline value', v:'£'+pipelineValue+'/mo', col:'#16a34a'},
+    {l:'Needs attention', v:attentionCount, col:'#a16207'},
+    {l:'Healthy', v:healthyCount, col:'#16a34a'}
+  ];
+  stats.forEach(function(s){
+    statsHtml += '<div class="crm-stat-card"><div class="crm-stat-l">'+s.l+'</div><div class="crm-stat-v"'+(s.col?' style="color:'+s.col+'"':'')+'>'+s.v+'</div></div>';
+  });
+  document.getElementById('crm-ov-stats').innerHTML = statsHtml;
+
+  // Customer health breakdown — visual bar
+  var total = mine.length || 1;
+  var healthHtml = '';
+  healthHtml += '<div class="health-bar-row"><div style="width:90px;font-size:12px;color:#334155">🟢 Healthy</div><div class="health-bar-track"><div class="health-bar-fill" style="width:'+(healthyCount/total*100)+'%;background:#16a34a"></div></div><div style="width:24px;text-align:right;font-size:12px;font-weight:600">'+healthyCount+'</div></div>';
+  healthHtml += '<div class="health-bar-row"><div style="width:90px;font-size:12px;color:#334155">🟠 Attention</div><div class="health-bar-track"><div class="health-bar-fill" style="width:'+(attentionCount/total*100)+'%;background:#a16207"></div></div><div style="width:24px;text-align:right;font-size:12px;font-weight:600">'+attentionCount+'</div></div>';
+  healthHtml += '<div class="health-bar-row"><div style="width:90px;font-size:12px;color:#334155">🔴 At risk</div><div class="health-bar-track"><div class="health-bar-fill" style="width:'+(riskCount/total*100)+'%;background:#dc2626"></div></div><div style="width:24px;text-align:right;font-size:12px;font-weight:600">'+riskCount+'</div></div>';
+  if(!mine.length) healthHtml = '<div class="empty">No customers yet.</div>';
+  document.getElementById('crm-ov-health').innerHTML = healthHtml;
+
+  // Today's work — real meetings scheduled for today, plus open tasks (urgent first)
+  var todayMeets = myMeets.filter(function(m){return m.status==='upcoming' && m.date==='Today';});
+  var todayHtml = '';
+  if(todayMeets.length || myOpenTasks.length){
+    todayMeets.sort(function(a,b){return a.time.localeCompare(b.time);}).forEach(function(m){
+      todayHtml += '<div class="ri" style="justify-content:space-between;cursor:pointer" onclick="openMeeting(\''+m.id+'\')"><div><div class="ri-txt">'+escHtml(m.time)+' — '+escHtml(m.custName)+' — '+escHtml(m.purpose)+'</div></div><span class="sp sp-purple">meeting</span></div>';
+    });
+    myOpenTasks.slice().sort(function(a,b){return (b.urgent?1:0)-(a.urgent?1:0);}).slice(0,5).forEach(function(t){
+      todayHtml += '<div class="ri" style="justify-content:space-between"><div><div class="ri-txt">'+escHtml(t.text)+' — '+escHtml(t.custName)+'</div></div><span class="sp '+(t.urgent?'sp-d':'sp-p')+'">due '+escHtml(t.due)+'</span></div>';
+    });
+  } else {
+    todayHtml = '<div class="empty">Nothing scheduled today — enjoy the breathing room.</div>';
+  }
+  document.getElementById('crm-ov-today').innerHTML = todayHtml;
+
+  // AI relationship insights — built only from real, checkable signals
+  var insights = [];
+  var quietCustomers = mine.filter(function(c){return parseDaysAgo(c.lastContact) > 10;});
+  if(quietCustomers.length){
+    insights.push(quietCustomers.length + ' customer' + (quietCustomers.length>1?'s':'') + ' haven\'t been contacted in over 10 days: ' + quietCustomers.map(function(c){return c.name;}).join(', ') + '.');
+  }
+  var openStageOpps = myOpps.filter(function(o){return o.stage==='proposal';});
+  if(openStageOpps.length){
+    insights.push(openStageOpps.length + ' opportunit' + (openStageOpps.length>1?'ies':'y') + ' currently sitting at proposal stage — worth a follow-up.');
+  }
+  mine.forEach(function(c){
+    var hasMeetingSoon = myMeets.some(function(m){return m.custId===c.id && m.status==='upcoming';});
+    var hasUrgentTask = tasks.some(function(t){return t.custId===c.id && !t.done && t.urgent;});
+    if(hasMeetingSoon && hasUrgentTask){
+      insights.push(c.name + ' has an upcoming meeting and an unresolved urgent task — worth reviewing before you meet.');
+    }
+  });
+  if(!insights.length) insights.push('No notable patterns detected right now — things look steady.');
+  var insightsHtml = '';
+  insights.forEach(function(i){ insightsHtml += '<div style="font-size:12.5px;color:#334155;padding:5px 0;border-bottom:1px solid #f8fafc">'+escHtml(i)+'</div>'; });
+  document.getElementById('crm-ov-insights').innerHTML = insightsHtml;
+}
+
+var custFilter = 'all';
+
+function setCustFilter(filter, el) {
+  custFilter = filter;
+  document.querySelectorAll('#mycust-filters .customer-filter-chip').forEach(function(c){c.classList.remove('on');});
+  el.classList.add('on');
+  renderMyCustomers();
+}
+
+async function renderMyCustomers() {
+  customers = await DB.customers.list(); // keeps getCustomerHealth and every other direct reader of the global correct
+  var mine = myCustomers();
+  var healthMap = {};
+  mine.forEach(function(c){ healthMap[c.id] = getCustomerHealth(c); });
+  document.getElementById('mycust-total').textContent = mine.length;
+  document.getElementById('mycust-attention').textContent = mine.filter(function(c){return healthMap[c.id].key==='amber';}).length;
+  document.getElementById('mycust-risk').textContent = mine.filter(function(c){return healthMap[c.id].key==='red';}).length;
+
+  // Populate industry/location dropdowns from real customer data, preserving current selection
+  var sectorSel = document.getElementById('mycust-sector-filter');
+  var locationSel = document.getElementById('mycust-location-filter');
+  var currentSector = sectorSel.value;
+  var currentLocation = locationSel.value;
+  var sectors = Array.from(new Set(mine.map(function(c){return c.sector;}))).sort();
+  var locations = Array.from(new Set(mine.map(function(c){return c.location;}))).sort();
+  sectorSel.innerHTML = '<option value="">All industries</option>' + sectors.map(function(s){return '<option value="'+escHtml(s)+'">'+escHtml(s)+'</option>';}).join('');
+  locationSel.innerHTML = '<option value="">All locations</option>' + locations.map(function(l){return '<option value="'+escHtml(l)+'">'+escHtml(l)+'</option>';}).join('');
+  sectorSel.value = currentSector;
+  locationSel.value = currentLocation;
+
+  var q = document.getElementById('mycust-search').value.trim().toLowerCase();
+  var sectorFilter = sectorSel.value;
+  var locationFilter = locationSel.value;
+  var filtered = mine.filter(function(c){
+    var matchesSearch = !q || c.name.toLowerCase().indexOf(q)>-1 || c.sector.toLowerCase().indexOf(q)>-1;
+    var matchesFilter = custFilter==='all' || healthMap[c.id].key===custFilter;
+    var matchesSector = !sectorFilter || c.sector===sectorFilter;
+    var matchesLocation = !locationFilter || c.location===locationFilter;
+    return matchesSearch && matchesFilter && matchesSector && matchesLocation;
+  });
+
+  var html = '';
+  filtered.forEach(function(c){
+    var h = healthMap[c.id];
+    var initials = c.name.split(' ').map(function(w){return w[0];}).slice(0,2).join('');
+    var nextM = nextMeetingFor(c.id);
+    var oppVal = openOpportunityValueFor(c.id);
+    var primary = getPrimaryContact(c.id);
+    var openTaskCount = tasks.filter(function(t){return t.custId===c.id && !t.done;}).length;
+
+    html += '<div class="cust-row" onclick="openCustomer(\''+c.id+'\')">';
+    html += '<div class="cust-avatar">'+initials+'</div>';
+    html += '<div style="flex:1;min-width:140px">';
+    html += '<div class="cust-name">'+escHtml(c.name)+'</div>';
+    html += '<div class="cust-sub">'+escHtml(c.sector)+' · '+escHtml(c.location)+'</div>';
+    if(primary) html += '<div class="cust-sub">'+escHtml(primary.name)+' · '+escHtml(primary.title)+'</div>';
+    html += '</div>';
+    html += '<div style="text-align:right;min-width:110px">';
+    html += '<div class="cust-sub">Last contact</div><div style="font-size:12px;font-weight:500">'+escHtml(c.lastContact)+'</div>';
+    html += '</div>';
+    html += '<div style="text-align:right;min-width:110px">';
+    html += '<div class="cust-sub">Next meeting</div><div style="font-size:12px;font-weight:500">'+(nextM ? escHtml(nextM.date) : '—')+'</div>';
+    html += '</div>';
+    html += '<div style="text-align:right;min-width:80px">';
+    html += '<div class="cust-sub">Open tasks</div><div style="font-size:12px;font-weight:500">'+openTaskCount+'</div>';
+    html += '</div>';
+    html += '<div style="text-align:right;min-width:90px">';
+    html += '<div class="cust-sub">Opportunity</div><div style="font-size:12px;font-weight:600;color:#16a34a">'+(oppVal ? '£'+oppVal+'/mo' : '—')+'</div>';
+    html += '</div>';
+    html += '<span class="sp '+healthPillCls[h.key]+'" style="margin-left:4px;flex-shrink:0">'+healthLabel[h.key]+' · '+h.score+'</span>';
+    html += '</div>';
+  });
+  document.getElementById('mycust-list').innerHTML = html || '<div class="empty">No customers match this filter.</div>';
+}
+
+function toggleAddCustomer() {
+  var form = document.getElementById('add-cust-form');
+  form.style.display = form.style.display === 'block' ? 'none' : 'block';
+}
+
+async function saveNewCustomer() {
+  var name = document.getElementById('newcust-name').value.trim();
+  var sector = document.getElementById('newcust-sector').value.trim();
+  var location = document.getElementById('newcust-location').value.trim();
+  if(!name){ alert('Please enter a company name'); return; }
+  await DB.customers.add(name, sector, location);
+  document.getElementById('newcust-name').value = '';
+  document.getElementById('newcust-sector').value = '';
+  document.getElementById('newcust-location').value = '';
+  document.getElementById('newcust-email').value = '';
+  toggleAddCustomer();
+  renderMyCustomers();
+  updateCrmNavBadges();
+  renderCrmOverview();
+}
+
+function openCustomer(id) {
+  activeCustomerId = id;
+  activeCustTab = 'overview';
+  renderCustomerDetail();
+  pg('customer-detail', null);
+}
+
+async function renderCustomerDetail() {
+  var c = customers.find(function(x){return String(x.id)===String(activeCustomerId);});
+  if(!c) return;
+  var initials = c.name.split(' ').map(function(w){return w[0];}).slice(0,2).join('');
+  var notes = await DB.customers.notes(c.id);
+  var timeline = await DB.customers.timeline(c.id);
+  var contacts = await DB.contacts.list(c.id);
+  custContacts[c.id] = contacts; // cache for getPrimaryContact(), called synchronously elsewhere — see LAUNCH_CHECKLIST.md
+  var custTasks = tasks.filter(function(t){return t.custId===c.id && !t.done;});
+  var custMeets = meetings.filter(function(m){return m.custId===c.id;});
+  var custOpps = opportunities.filter(function(o){return o.custId===c.id;});
+  var h = getCustomerHealth(c);
+  var primary = getPrimaryContact(c.id);
+  var nextM = nextMeetingFor(c.id);
+  var openOppVal = openOpportunityValueFor(c.id);
+
+  var html = '';
+
+  // Header
+  html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:.5rem">';
+  html += '<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">';
+  html += '<div class="cust-avatar" style="width:44px;height:44px;font-size:14px">'+initials+'</div>';
+  html += '<div><div style="font-size:16px;font-weight:600">'+escHtml(c.name)+'</div><div class="cust-sub">'+escHtml(c.sector)+' · '+escHtml(c.location)+' · customer since '+escHtml(c.since)+'</div>';
+  if(primary) html += '<div class="cust-sub">'+escHtml(primary.name)+' · '+escHtml(primary.title)+'</div>';
+  html += '</div>';
+  html += '<span class="sp '+healthPillCls[h.key]+'" style="margin-left:8px">'+healthLabel[h.key]+' · '+h.score+'/100</span>';
+  html += '</div>';
+  html += '<div style="display:flex;gap:8px;flex-wrap:wrap">';
+  if(primary) html += '<a class="btn btn-o" href="mailto:'+escHtml(primary.email)+'" style="text-decoration:none">✉️ Email</a>';
+  html += '<button class="btn btn-o" onclick="openScheduler(\''+c.id+'\')">📅 Schedule meeting</button>';
+  html += '<button class="btn btn-g" onclick="showAddNote(\''+c.id+'\')">➕ Add note</button>';
+  html += '</div>';
+  html += '</div>';
+
+  // Tabs
+  html += '<div style="display:flex;gap:6px;margin-bottom:1rem;flex-wrap:wrap">';
+  ['overview','activity','contacts','meetings','tasks','opportunities'].forEach(function(tab, i){
+    var labels = {overview:'Overview', activity:'Activity', contacts:'Contacts', meetings:'Meetings', tasks:'Tasks', opportunities:'Opportunities'};
+    html += '<button class="hol-tab'+(activeCustTab===tab?' on':'')+'" onclick="custDetailTab(\''+tab+'\',this)">'+labels[tab]+'</button>';
+  });
+  html += '</div>';
+
+  // OVERVIEW TAB
+  html += '<div id="cdtab-overview" style="display:'+(activeCustTab==="overview"?"block":"none")+'">';
+  html += '<div class="stat-mini-row">';
+  html += '<div class="stat-mini"><div class="stat-mini-l">Last contact</div><div class="stat-mini-v">'+escHtml(c.lastContact)+'</div></div>';
+  html += '<div class="stat-mini"><div class="stat-mini-l">Next contact</div><div class="stat-mini-v">'+(nextM ? escHtml(nextM.date) : 'None scheduled')+'</div></div>';
+  html += '<div class="stat-mini"><div class="stat-mini-l">Open tasks</div><div class="stat-mini-v">'+custTasks.length+'</div></div>';
+  html += '<div class="stat-mini"><div class="stat-mini-l">Open opportunity</div><div class="stat-mini-v">'+(openOppVal ? '£'+openOppVal+'/mo' : '£0/mo')+'</div></div>';
+  html += '</div>';
+
+  // Next Action
+  var nextAction = custTasks.slice().sort(function(a,b){return (b.urgent?1:0)-(a.urgent?1:0);})[0];
+  html += '<div class="next-action-card" style="margin-bottom:.875rem">';
+  html += '<div class="next-action-l">Next action</div>';
+  if(nextAction){
+    html += '<div style="font-size:14px;font-weight:600;color:#1C2420;margin-bottom:2px">'+escHtml(nextAction.text)+'</div>';
+    html += '<div style="font-size:12px;color:#6B6459;margin-bottom:8px">Due '+escHtml(nextAction.due)+'</div>';
+    html += '<button class="btn btn-g" style="padding:6px 14px;font-size:12px" onclick="completeTaskById(\''+nextAction.id+'\')">✓ Complete</button>';
+  } else {
+    html += '<div style="font-size:13px;color:#6B6459">No open tasks — nothing outstanding for this customer right now.</div>';
+  }
+  html += '</div>';
+
+  // AI Relationship Summary
+  if(c.summary){
+    html += '<div class="ai-box"><div class="ai-box-h">✨ AI relationship summary</div><div class="ai-box-t">'+escHtml(c.summary)+'</div>';
+    html += '<div style="font-size:10.5px;color:#94a3b8;margin-top:8px">Generated from meeting activity, tasks, and contact history — not a statement from the customer.</div></div>';
+  }
+
+  // Explainable health
+  html += '<div class="card"><div class="ct">Why this health status?</div>';
+  html += '<ul class="health-reason-list">';
+  h.reasons.forEach(function(r){ html += '<li class="health-reason-item">'+escHtml(r)+'</li>'; });
+  html += '</ul></div>';
+
+  // Customer pulse — clearly separated as the customer's own words, not AI inference
+  var pulse = custPulse[c.id];
+  html += '<div class="card"><div class="ct">📊 Customer pulse survey <span style="font-weight:400;font-size:10.5px;color:#94a3b8">— the customer\'s own feedback</span></div>';
+  if(pulse){
+    html += '<div style="display:flex;align-items:center;gap:10px;margin-bottom:6px"><div style="font-size:22px;font-weight:700;color:'+(pulse.score>=4?'#16a34a':pulse.score>=3?'#a16207':'#dc2626')+'">'+pulse.score+'/5</div><div style="font-size:11px;color:#94a3b8">Last sent '+escHtml(pulse.date)+'</div></div>';
+    if(pulse.comment) html += '<div style="font-size:12px;color:#334155;font-style:italic">"'+escHtml(pulse.comment)+'"</div>';
+  } else {
+    html += '<div style="font-size:12px;color:#64748b;margin-bottom:.6rem">A quick, optional one-question survey sent directly to the customer — real first-party feedback, not an AI inference.</div>';
+  }
+  html += '<button class="btn btn-o" style="margin-top:8px" onclick="sendPulseSurvey(\''+c.id+'\')" id="pulse-btn-'+c.id+'">📨 Send pulse survey</button>';
+  html += '</div>';
+
+  html += '<div class="card"><div class="ct">✍️ Draft a relationship recap</div>';
+  html += '<div style="font-size:12px;color:#64748b;margin-bottom:.6rem">A short, genuine note you can send the customer — not a sales pitch, just an acknowledgment the relationship is real and remembered.</div>';
+  html += '<div id="recap-output-'+c.id+'"></div>';
+  html += '<button class="btn btn-o" onclick="draftRecap(\''+c.id+'\')">Generate recap</button>';
+  html += '</div>';
+  html += '</div>'; // end overview tab
+
+  // ACTIVITY TAB
+  html += '<div id="cdtab-activity" style="display:'+(activeCustTab==="activity"?"block":"none")+'"><div class="card"><div class="ct">🕐 Activity timeline</div>';
+  if(timeline.length){
+    timeline.forEach(function(t){
+      var dotCol = t.type==='meeting' ? '#7c3aed' : t.type==='note' ? '#1d4ed8' : '#16a34a';
+      var sourceTag = t.source==='ai' ? '<span class="ai-label-tag" style="margin-bottom:0;margin-left:6px">✨ AI</span>' : '';
+      html += '<div class="ri"><div class="health-dot" style="background:'+dotCol+';margin-top:5px"></div><div><div class="ri-txt">'+escHtml(t.text)+sourceTag+'</div><div class="ri-sub">'+escHtml(t.sub)+'</div></div></div>';
+    });
+  } else { html += '<div class="empty">No activity yet.</div>'; }
+  html += '</div>';
+  html += '<div class="card"><div class="ct">📝 Notes</div><div id="cust-notes-list">';
+  if(notes.length){
+    notes.forEach(function(n){ html += '<div class="ri"><div><div class="ri-txt">'+escHtml(n.text)+'</div><div class="ri-sub">'+escHtml(n.author)+' · '+escHtml(n.date)+'</div></div></div>'; });
+  } else { html += '<div class="empty">No notes yet.</div>'; }
+  html += '</div>';
+  html += '<div id="add-note-box" style="display:none;margin-top:8px"><div style="display:flex;gap:6px"><input type="text" id="new-note-input" placeholder="Write a note about this customer..." style="flex:1;padding:7px 10px;border:1px solid #e2e8f0;border-radius:7px;font-size:12px"><button class="btn btn-p" onclick="saveNote(\''+c.id+'\')">Save</button></div></div>';
+  html += '</div></div>';
+
+  // CONTACTS TAB
+  html += '<div id="cdtab-contacts" style="display:'+(activeCustTab==="contacts"?"block":"none")+'"><div class="card"><div class="ct">People at '+escHtml(c.name)+'</div>';
+  if(contacts.length){
+    contacts.forEach(function(ct){
+      var ctInitials = ct.name.split(' ').map(function(w){return w[0];}).slice(0,2).join('');
+      html += '<div class="contact-card"><div class="contact-avatar">'+ctInitials+'</div><div style="flex:1"><div style="font-size:13px;font-weight:500">'+escHtml(ct.name)+(ct.primary?' <span style="font-size:10px;color:#7c3aed;background:#ede9fe;padding:1px 6px;border-radius:8px">Primary</span>':'')+'</div><div class="cust-sub">'+escHtml(ct.title)+' · <a href="mailto:'+escHtml(ct.email)+'" style="color:#7c3aed">'+escHtml(ct.email)+'</a></div></div></div>';
+    });
+  } else { html += '<div class="empty">No contacts added yet.</div>'; }
+  html += '</div>';
+  html += '<div class="card"><div class="ct">Add a contact</div>';
+  html += '<div class="field"><label>Name</label><input type="text" id="newcontact-name" placeholder="Sarah Smith"></div>';
+  html += '<div class="field"><label>Job title</label><input type="text" id="newcontact-title" placeholder="Finance Director"></div>';
+  html += '<div class="field"><label>Email</label><input type="email" id="newcontact-email" placeholder="sarah@company.co.uk"></div>';
+  html += '<button class="btn btn-g" onclick="saveContact(\''+c.id+'\')">Save contact</button>';
+  html += '</div></div>';
+
+  // MEETINGS TAB
+  html += '<div id="cdtab-meetings" style="display:'+(activeCustTab==="meetings"?"block":"none")+'"><div class="card"><div class="ct">📅 Meetings</div>';
+  if(custMeets.length){
+    custMeets.forEach(function(m){ html += '<div class="ri" style="justify-content:space-between;cursor:pointer" onclick="openMeeting(\''+m.id+'\')"><div><div class="ri-txt">'+escHtml(m.purpose)+'</div><div class="ri-sub">'+escHtml(m.date)+' at '+escHtml(m.time)+' · '+formatLabel[m.format]+'</div></div><span class="sp '+(m.status==='upcoming'?'sp-purple':'sp-a')+'">'+escHtml(m.status)+'</span></div>'; });
+  } else { html += '<div class="empty">No meetings logged yet.</div>'; }
+  html += '</div></div>';
+
+  // TASKS TAB
+  html += '<div id="cdtab-tasks" style="display:'+(activeCustTab==="tasks"?"block":"none")+'"><div class="card"><div class="ct">✅ Open tasks</div>';
+  if(custTasks.length){
+    custTasks.forEach(function(t){ html += '<div class="ri" style="justify-content:space-between"><div class="ri-txt">'+escHtml(t.text)+'</div>'+(t.urgent?'<span class="sp sp-d">due '+escHtml(t.due)+'</span>':'<span class="sp sp-p">due '+escHtml(t.due)+'</span>')+'</div>'; });
+  } else { html += '<div class="empty">No open tasks for this customer.</div>'; }
+  html += '</div></div>';
+
+  // OPPORTUNITIES TAB
+  html += '<div id="cdtab-opportunities" style="display:'+(activeCustTab==="opportunities"?"block":"none")+'"><div class="card"><div class="ct">📈 Opportunities</div>';
+  if(custOpps.length){
+    custOpps.forEach(function(o){ html += '<div class="ri" style="justify-content:space-between"><div><div class="ri-txt">'+escHtml(o.desc)+'</div><div class="ri-sub">'+oppStageLabel[o.stage]+'</div></div><span style="font-size:12px;font-weight:600;color:#16a34a">£'+o.value+'/mo</span></div>'; });
+  } else { html += '<div class="empty">No opportunities logged for this customer yet.</div>'; }
+  html += '</div></div>';
+
+  document.getElementById('cust-detail-body').innerHTML = html;
+}
+
+function custDetailTab(tab, btn) {
+  activeCustTab = tab;
+  ['overview','activity','contacts','meetings','tasks','opportunities'].forEach(function(t){
+    var el = document.getElementById('cdtab-'+t);
+    if(el) el.style.display = t===tab ? 'block' : 'none';
+  });
+  btn.parentElement.querySelectorAll('.hol-tab').forEach(function(b){b.classList.remove('on');});
+  btn.classList.add('on');
+}
+
+async function completeTaskById(id) {
+  await DB.tasks.complete(SUPERB_CONFIG.DEMO_MODE ? parseInt(id) : id);
+  renderCustomerDetail();
+  renderTasks();
+  renderMyCustomers();
+  updateCrmNavBadges();
+  renderCrmOverview();
+}
+
+async function saveContact(custId) {
+  var name = document.getElementById('newcontact-name').value.trim();
+  var title = document.getElementById('newcontact-title').value.trim();
+  var email = document.getElementById('newcontact-email').value.trim();
+  if(!name){ alert('Please enter a name'); return; }
+  await DB.contacts.add(custId, name, title, email);
+  renderCustomerDetail();
+}
+
+function showAddNote() {
+  var activityTabBtn = document.querySelector('.hol-tab[onclick*="activity"]');
+  if(activityTabBtn) custDetailTab('activity', activityTabBtn);
+  document.getElementById('add-note-box').style.display = 'block';
+  document.getElementById('new-note-input').focus();
+}
+
+async function saveNote(custId) {
+  var input = document.getElementById('new-note-input');
+  var text = input.value.trim();
+  if(!text){ alert('Please write a note first'); return; }
+  await DB.customers.addNote(custId, text);
+  renderCustomerDetail();
+}
+
+// ============================================
+// Real date handling for task due dates.
+// Demo tasks store a friendly relative label
+// ("Fri", "Today") but filters need an actual
+// date to work honestly — so we resolve that
+// label against the real current date rather
+// than fabricating anything.
+// ============================================
+function todayMidnight() {
+  var d = new Date();
+  d.setHours(0,0,0,0);
+  return d;
+}
+
+function nextOccurrenceOfWeekday(targetDow) {
+  var d = todayMidnight();
+  var diff = (targetDow - d.getDay() + 7) % 7;
+  if(diff === 0) diff = 7;
+  d.setDate(d.getDate() + diff);
+  return d;
+}
+
+function parseRelativeDue(dueStr) {
+  if(!dueStr) return null;
+  var s = dueStr.trim();
+  var dayMap = {Mon:1,Tue:2,Wed:3,Thu:4,Fri:5,Sat:6,Sun:0};
+  var d = todayMidnight();
+  if(s==='Today') return d;
+  if(s==='Tomorrow'){ var t=new Date(d); t.setDate(t.getDate()+1); return t; }
+  if(s==='This week'){ var t=new Date(d); t.setDate(t.getDate()+3); return t; }
+  if(s.toLowerCase()==='next week'){ var t=new Date(d); t.setDate(t.getDate()+7); return t; }
+  if(dayMap.hasOwnProperty(s)) return nextOccurrenceOfWeekday(dayMap[s]);
+  return null; // unrecognised label (e.g. "done") — excluded from date-based filters
+}
+
+function formatTaskDate(d) {
+  if(!d) return null;
+  return d.toLocaleDateString('en-GB', {weekday:'short', day:'numeric', month:'short'});
+}
+
+var taskFilter = 'all';
+
+function setTaskFilter(filter, el) {
+  taskFilter = filter;
+  document.querySelectorAll('#task-filters .customer-filter-chip').forEach(function(c){c.classList.remove('on');});
+  el.classList.add('on');
+  renderTasks();
+}
+
+function taskMatchesFilter(t, filter) {
+  if(filter==='completed') return t.done;
+  if(t.done) return false;
+  if(filter==='all') return true;
+  var due = parseRelativeDue(t.due);
+  var today = todayMidnight();
+  if(!due) return false;
+  if(filter==='today') return due.getTime()===today.getTime();
+  if(filter==='overdue') return due.getTime() < today.getTime();
+  if(filter==='week'){
+    var weekAhead = new Date(today); weekAhead.setDate(weekAhead.getDate()+7);
+    return due.getTime() >= today.getTime() && due.getTime() <= weekAhead.getTime();
+  }
+  return true;
+}
+
+async function renderTasks() {
+  tasks = await DB.tasks.list(); // keeps getCustomerHealth and other direct readers of the global correct
+  var mine = myTasks();
+  var filtered = mine.filter(function(t){ return taskMatchesFilter(t, taskFilter); });
+
+  var html = '';
+  filtered.forEach(function(t){
+    var due = parseRelativeDue(t.due);
+    var isOverdue = due && !t.done && due.getTime() < todayMidnight().getTime();
+    var priorityLabel = t.urgent ? 'High' : 'Normal';
+    var sourceLabel = t.source || 'Manual';
+    var contact = t.contactName ? t.contactName : null;
+
+    html += '<div class="ri" style="justify-content:space-between;'+(t.done?'opacity:.6':'')+'">';
+    html += '<div style="display:flex;align-items:center;gap:10px;flex:1">';
+    html += '<div class="task-check'+(t.done?' checked':'')+'" data-id="'+t.id+'"'+(t.done?'':' onclick="completeTask(this)"')+'>✓</div>';
+    html += '<div><div class="ri-txt"'+(t.done?' style="text-decoration:line-through"':'')+'>'+escHtml(t.text)+'</div>';
+    html += '<div class="ri-sub">'+escHtml(t.custName)+(contact?' · '+escHtml(contact):'')+' · '+priorityLabel+' priority · '+sourceLabel+'</div></div>';
+    html += '</div>';
+    if(!t.done){
+      html += '<span class="sp '+(isOverdue?'sp-d':t.urgent?'sp-d':'sp-p')+'">'+(isOverdue?'overdue':'due')+' '+(due?formatTaskDate(due):escHtml(t.due))+'</span>';
+    }
+    html += '</div>';
+  });
+  document.getElementById('task-list').innerHTML = html || '<div class="empty">No tasks match this filter.</div>';
+}
+
+function toggleAddTask() {
+  var form = document.getElementById('add-task-form');
+  if(form.style.display !== 'block'){
+    document.getElementById('newtask-customer').innerHTML = myCustomers().map(function(c){return '<option value="'+c.id+'">'+escHtml(c.name)+'</option>';}).join('');
+    updateTaskContactOptions();
+  }
+  form.style.display = form.style.display === 'block' ? 'none' : 'block';
+}
+
+function updateTaskContactOptions() {
+  var rawCustId = document.getElementById('newtask-customer').value;
+  var custId = SUPERB_CONFIG.DEMO_MODE ? parseInt(rawCustId) : rawCustId;
+  var contacts = custContacts[custId] || [];
+  var sel = document.getElementById('newtask-contact');
+  sel.innerHTML = '<option value="">No specific contact</option>' + contacts.map(function(c){return '<option value="'+escHtml(c.name)+'">'+escHtml(c.name)+'</option>';}).join('');
+}
+
+async function saveNewTask() {
+  var text = document.getElementById('newtask-text').value.trim();
+  var rawCustId = document.getElementById('newtask-customer').value;
+  var custId = SUPERB_CONFIG.DEMO_MODE ? parseInt(rawCustId) : rawCustId; // demo ids are numbers; live ids are uuid strings — never force-parse a uuid
+  var contactName = document.getElementById('newtask-contact').value;
+  var dueInput = document.getElementById('newtask-due').value;
+  var priority = document.getElementById('newtask-priority').value;
+  if(!text){ alert('Please describe the task'); return; }
+  if(!dueInput){ alert('Please choose a due date'); return; }
+  var cust = customers.find(function(c){return String(c.id)===String(custId);});
+  var dueDate = new Date(dueInput);
+  var today = todayMidnight();
+  var diffDays = Math.round((dueDate - today) / 86400000);
+  var dueLabel = diffDays===0 ? 'Today' : diffDays===1 ? 'Tomorrow' : formatTaskDate(dueDate);
+  await DB.tasks.create({customerId:custId, custName:cust?cust.name:'', repName:repName, text:text, due:dueLabel, dueDate:dueInput, urgent:priority==='high', source:'Manual', contactName:contactName||null});
+  document.getElementById('newtask-text').value = '';
+  document.getElementById('newtask-due').value = '';
+  toggleAddTask();
+  renderTasks();
+  renderMyCustomers();
+  updateCrmNavBadges();
+  renderCrmOverview();
+  if(String(activeCustomerId) === String(custId)) renderCustomerDetail();
+}
+
+async function completeTask(el) {
+  var rawId = el.getAttribute('data-id');
+  var id = SUPERB_CONFIG.DEMO_MODE ? parseInt(rawId) : rawId;
+  await DB.tasks.complete(id);
+  renderTasks();
+  renderMyCustomers();
+  updateCrmNavBadges();
+  renderCrmOverview();
+}
+
+function meetTab(tab, btn) {
+  document.getElementById('meet-tab-upcoming').style.display = tab==='upcoming' ? 'block' : 'none';
+  document.getElementById('meet-tab-past').style.display = tab==='past' ? 'block' : 'none';
+  document.querySelectorAll('#pg-meetings .hol-tab').forEach(function(b){b.classList.remove('on');});
+  btn.classList.add('on');
+}
+
+async function renderMeetings() {
+  meetings = await DB.meetings.list(); // keeps getCustomerHealth and other direct readers of the global correct
+  var mine = myMeetings();
+  var upcoming = mine.filter(function(m){return m.status==='upcoming';});
+  var past = mine.filter(function(m){return m.status==='completed';});
+  var upHtml = '';
+  upcoming.forEach(function(m){
+    upHtml += '<div class="ri" style="justify-content:space-between;cursor:pointer" onclick="openMeeting(\''+m.id+'\')"><div><div class="ri-txt" style="font-weight:600">'+escHtml(m.custName)+' — '+escHtml(m.purpose)+'</div><div class="ri-sub">'+escHtml(m.date)+' at '+escHtml(m.time)+' · '+formatLabel[m.format]+'</div></div><span class="sp sp-purple">upcoming</span></div>';
+  });
+  document.getElementById('meet-list-upcoming').innerHTML = upHtml || '<div class="empty">No upcoming meetings scheduled.</div>';
+  var pastHtml = '';
+  past.forEach(function(m){
+    pastHtml += '<div class="ri" style="justify-content:space-between;cursor:pointer" onclick="openMeeting(\''+m.id+'\')"><div><div class="ri-txt" style="font-weight:600">'+escHtml(m.custName)+' — '+escHtml(m.purpose)+'</div><div class="ri-sub">'+escHtml(m.date)+' at '+escHtml(m.time)+' · '+formatLabel[m.format]+'</div></div><span class="sp sp-a">completed</span></div>';
+  });
+  document.getElementById('meet-list-past').innerHTML = pastHtml || '<div class="empty">No past meetings yet.</div>';
+}
+
+function openMeeting(id) {
+  activeMeetingId = id;
+  renderMeetingDetail();
+  pg('meeting-detail', null);
+}
+
+function generateAiPrepNotes(cust) {
+  if(!cust) return 'No customer history available yet.';
+  var notes = custNotes[cust.id] || [];
+  var latest = notes[0];
+  var h = getCustomerHealth(cust);
+  var primary = getPrimaryContact(cust.id);
+  var base = cust.name+' has been a customer since '+cust.since+' and is currently rated as '+healthLabel[h.key].toLowerCase()+' ('+h.score+'/100). Last contact was '+cust.lastContact+'.';
+  if(primary) base += ' You\'ll be speaking with '+primary.name+', '+primary.title+'.';
+  else base += ' No named contact is on file yet for this customer — worth adding one after this meeting.';
+  if(latest) base += ' Most recent note: "'+latest.text+'"';
+  base += ' Suggested focus for this meeting: ' + (h.key==='red' ? 're-engage and address any open concerns directly.' : h.key==='amber' ? 'resolve the outstanding issue before it affects renewal.' : 'maintain momentum and look for expansion opportunities.');
+  return base;
+}
+
+function renderMeetingDetail() {
+  var m = meetings.find(function(x){return String(x.id)===String(activeMeetingId);});
+  if(!m) return;
+  var isUpcoming = m.status === 'upcoming';
+  var state = meetingUiState[m.id];
+  var html = '';
+  html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem">';
+  html += '<div><div style="font-size:16px;font-weight:600">'+escHtml(m.custName)+' — '+escHtml(m.purpose)+'</div><div class="cust-sub">'+escHtml(m.date)+' at '+escHtml(m.time)+' · '+formatLabel[m.format]+'</div></div>';
+  var statusLabel = state && state.phase==='live' ? 'in progress' : state && state.phase==='processing' ? 'processing' : state && state.phase==='summary' ? 'awaiting approval' : (isUpcoming?'upcoming':'completed');
+  html += '<span class="sp '+(state||isUpcoming?'sp-purple':'sp-a')+'">'+statusLabel+'</span></div>';
+
+  if(state && state.phase==='live'){ html += renderLiveMeeting(m, state); }
+  else if(state && state.phase==='processing'){ html += '<div class="card"><div class="ai-loading-box"><div class="ai-loading-spin"></div><div style="font-size:13px;font-weight:500;color:#334155">AI is generating your meeting summary...</div></div></div>'; }
+  else if(state && state.phase==='summary'){ html += renderAiSummaryApproval(m, state); }
+  else if(isUpcoming){ html += renderUpcomingBriefing(m); }
+  else { html += renderCompletedMeeting(m); }
+
+  document.getElementById('meet-detail-body').innerHTML = html;
+}
+
+function renderUpcomingBriefing(m) {
+  var cust = customers.find(function(c){return c.id===m.custId;});
+  var primary = cust ? getPrimaryContact(cust.id) : null;
+  var html = '<div class="ai-box"><div class="ai-box-h">✨ AI prep notes for you</div><div class="ai-box-t">'+escHtml(generateAiPrepNotes(cust))+'</div></div>';
+  html += '<div class="card"><div class="ct">Meeting details</div>';
+  html += '<div style="font-size:12px;color:#334155;line-height:2"><b>Contact:</b> '+(primary ? escHtml(primary.name)+' · '+escHtml(primary.title) : 'No named contact on file')+'<br><b>Meeting type:</b> '+escHtml(m.purpose)+'<br><b>Format:</b> '+formatLabel[m.format]+'</div></div>';
+  var intel = externalIntel[m.custId];
+  if(intel){
+    html += '<div class="card"><div class="ct">🌐 External intelligence <span style="font-weight:400;color:#94a3b8;font-size:10px">— gathered '+escHtml(intel.scannedDate)+'</span></div>';
+    html += '<div class="ai-section-lbl">News mentions</div>';
+    if(intel.news.length){ intel.news.forEach(function(n){ html += '<div class="ai-section-item">📰 '+escHtml(n.headline)+' <span style="color:#94a3b8">— '+escHtml(n.source)+', '+escHtml(n.date)+'</span></div>'; }); }
+    else { html += '<div class="ai-section-item" style="color:#94a3b8">Nothing found this week</div>'; }
+    html += '<div class="ai-section-lbl">Social signal</div><div class="ai-section-item">💬 '+escHtml(intel.social)+'</div>';
+    html += '<div class="ai-section-lbl">Financial trend — Companies House</div>';
+    var trendIcon = intel.financial.trend==='up' ? '📈' : intel.financial.trend==='down' ? '📉' : '➖';
+    html += '<div class="ai-section-item">'+trendIcon+' '+escHtml(intel.financial.detail)+'</div>';
+    html += '<div style="font-size:11px;color:#7c3aed;background:#faf5ff;border-radius:7px;padding:7px 9px;margin-top:6px"><b>AI estimate:</b> '+escHtml(intel.financial.estimate)+'</div></div>';
+  }
+  if(m.managerNote){ html += '<div class="card" style="background:#fffbeb;border-color:#fde68a"><div class="ct">📌 Note from your manager</div><div style="font-size:12px;color:#334155;line-height:1.7">'+escHtml(m.managerNote)+'</div></div>'; }
+  if(m.format==='video'){
+    if(m.meetingLink){
+      html += '<div class="card join-link-card"><div class="ct">'+platformIcon(m.platform)+' '+escHtml(m.platform||'Video call')+'</div>';
+      html += '<div style="font-size:11px;color:#64748b;margin-bottom:.6rem">'+escHtml(m.custEmail || 'No email added')+' will use the same link to join — no download needed. Present your deck using your platform\'s own screen share.</div>';
+      html += '<div style="display:flex;gap:6px"><input type="text" readonly value="'+escHtml(m.meetingLink)+'" style="flex:1;padding:7px 10px;border:1px solid #e2e8f0;border-radius:7px;font-size:11px;color:#475569;background:#f8fafc"><button class="btn btn-o" onclick="navigator.clipboard.writeText(\''+escHtml(m.meetingLink)+'\');this.textContent=\'Copied ✓\'">Copy</button></div></div>';
+    } else {
+      html += '<div class="card"><div class="ct">📹 Video call</div><div style="font-size:12px;color:#64748b">No meeting link was added when this was scheduled — add one from the meeting list if needed.</div></div>';
+    }
+    html += '<div class="card"><div class="ct">▶ Ready to start?</div><div style="font-size:12px;color:#64748b;margin-bottom:.75rem">Starting this notifies '+escHtml(m.custName)+' the call is beginning.</div><button class="btn btn-g" onclick="startMeeting(\''+m.id+'\')">▶ Start meeting</button></div>';
+  } else {
+    html += '<div class="card"><div class="ct">🤝 In person</div><div style="font-size:12px;color:#64748b;margin-bottom:.75rem">Start this when the meeting begins to take live notes.</div><button class="btn btn-g" onclick="startMeeting(\''+m.id+'\')">▶ Start meeting</button></div>';
+  }
+  html += '<div class="card"><div class="ct">ℹ️ Before you begin</div><div style="font-size:11px;color:#64748b;line-height:1.7">All participants must be informed this meeting is being recorded and transcribed before it starts.</div></div>';
+  return html;
+}
+
+
+function renderLiveMeeting(m, state) {
+  var html = '<div class="rec-indicator"><div class="rec-dot"></div>Recording · all participants have been notified</div>';
+  if(m.format==='video' && m.meetingLink){
+    html += '<div class="card join-link-card"><div class="ct">'+platformIcon(m.platform)+' '+escHtml(m.platform||'Video call')+' in progress</div>';
+    html += '<div style="font-size:12px;color:#64748b;margin-bottom:.6rem">Use your platform\'s own screen share to present anything — no separate upload needed.</div>';
+    html += '<a href="'+escHtml(m.meetingLink)+'" target="_blank" class="btn btn-g" style="display:inline-block;text-decoration:none">↗ Rejoin the call</a></div>';
+  }
+  html += '<div class="card"><div class="ct">🎙️ Live transcription</div><div style="font-size:11px;color:#94a3b8;font-style:italic">Transcription running in the background — you\'ll see the full transcript once the meeting ends.</div></div>';
+  html += '<div class="card"><div class="ct">📝 Notes</div><textarea id="live-notes-input" style="width:100%;min-height:70px;border:1px solid #e2e8f0;border-radius:7px;padding:8px;font-size:12px;font-family:inherit" placeholder="Add notes as the meeting happens — optional">'+escHtml(state.liveNotes||'')+'</textarea></div>';
+  html += '<button class="btn btn-r btn-full" onclick="endMeeting(\''+m.id+'\')">■ End meeting</button>';
+  return html;
+}
+
+function platformIcon(platform) {
+  if(platform==='Zoom') return '🔵';
+  if(platform==='Microsoft Teams') return '🟣';
+  if(platform==='Google Meet') return '🟢';
+  return '📹';
+}
+
+function renderAiSummaryApproval(m, state) {
+  var s = state.aiSummary;
+  var html = '<div class="ai-box"><div class="ai-box-h">✨ AI summary — review before saving</div><textarea id="ai-summary-edit" style="width:100%;min-height:90px;border:1px solid #e9d5ff;border-radius:8px;padding:10px;font-size:12px;font-family:inherit;color:#334155;background:white">'+escHtml(s.summaryText)+'</textarea></div>';
+  html += '<div class="card"><div class="ct">😊 Customer sentiment</div><div style="display:flex;align-items:center;gap:10px"><div class="sentiment-track"><div class="sentiment-fill" style="width:'+s.sentiment+'%;background:'+(s.sentiment>=65?'#16a34a':s.sentiment>=40?'#a16207':'#dc2626')+'"></div></div><span style="font-size:12px;font-weight:600;color:'+(s.sentiment>=65?'#16a34a':s.sentiment>=40?'#a16207':'#dc2626')+'">'+(s.sentiment>=65?'Positive':s.sentiment>=40?'Mixed':'Negative')+' — '+s.sentiment+'%</span></div></div>';
+  html += '<div class="card"><div class="ct">💡 Key points</div><div class="ai-section-lbl">Concerns raised</div>';
+  s.concerns.forEach(function(c){ html += '<div class="ai-section-item">⚠️ '+escHtml(c)+'</div>'; });
+  if(!s.concerns.length) html += '<div class="ai-section-item" style="color:#94a3b8">None raised</div>';
+  html += '<div class="ai-section-lbl">Opportunities</div>';
+  s.opportunities.forEach(function(o){ html += '<div class="ai-section-item">📈 '+escHtml(o)+'</div>'; });
+  if(!s.opportunities.length) html += '<div class="ai-section-item" style="color:#94a3b8">None identified</div>';
+  html += '<div class="ai-section-lbl">Decisions made</div>';
+  s.decisions.forEach(function(d){ html += '<div class="ai-section-item">✅ '+escHtml(d)+'</div>'; });
+  if(!s.decisions.length) html += '<div class="ai-section-item" style="color:#94a3b8">None recorded</div>';
+  html += '</div>';
+  html += '<div class="card"><div class="ct">✅ Action items — created automatically on approval</div>';
+  s.actionItems.forEach(function(a){ html += '<div class="ri" style="justify-content:space-between"><div class="row-txt" style="font-size:12px">'+escHtml(a.text)+'</div><span class="sp '+(a.urgent?'sp-d':'sp-p')+'">'+escHtml(a.due)+'</span></div>'; });
+  html += '</div>';
+  html += '<div style="display:flex;gap:8px"><button class="btn btn-o" onclick="discardSummary(\''+m.id+'\')">Discard</button><button class="btn btn-g" style="flex:1" onclick="approveSummary(\''+m.id+'\')">✓ Approve and save to customer record</button></div>';
+  return html;
+}
+
+function renderCompletedMeeting(m) {
+  var html = '';
+  if(typeof m.sentiment === 'number'){
+    html += '<div class="card"><div class="ct">😊 Customer sentiment</div><div style="display:flex;align-items:center;gap:10px"><div class="sentiment-track"><div class="sentiment-fill" style="width:'+m.sentiment+'%;background:'+(m.sentiment>=65?'#16a34a':m.sentiment>=40?'#a16207':'#dc2626')+'"></div></div><span style="font-size:12px;font-weight:600;color:'+(m.sentiment>=65?'#16a34a':m.sentiment>=40?'#a16207':'#dc2626')+'">'+m.sentiment+'%</span></div></div>';
+  }
+  html += '<div class="card"><div class="ct">📝 Meeting summary</div><div style="font-size:12px;color:#334155;line-height:1.7;white-space:pre-wrap">'+escHtml(m.notes || 'No notes were recorded for this meeting.')+'</div></div>';
+  return html;
+}
+
+function startMeeting(id) { meetingUiState[id] = {phase:'live', liveNotes:''}; renderMeetingDetail(); }
+
+function endMeeting(id) {
+  var m = meetings.find(function(x){return String(x.id)===String(id);});
+  var state = meetingUiState[id];
+  if(!m || !state) return;
+  var liveNotesInput = document.getElementById('live-notes-input');
+  state.liveNotes = liveNotesInput ? liveNotesInput.value : '';
+  state.phase = 'processing';
+  renderMeetingDetail();
+  setTimeout(function(){
+    state.aiSummary = generateAiSummary(m, state.liveNotes);
+    state.phase = 'summary';
+    renderMeetingDetail();
+  }, 1400);
+}
+
+function generateAiSummary(m, liveNotes) {
+  var cust = customers.find(function(c){return c.id===m.custId;});
+  var health = cust ? getCustomerHealth(cust).key : 'green';
+  var templates = {
+    green: {text:'The meeting was positive overall. '+m.custName+' confirmed things are going well with no major concerns raised. There was interest in expanding usage, and the conversation ended with a clear next step agreed.', sentiment:82, concerns:[], opportunities:['Potential to expand usage or add further seats'], decisions:['Agreed next step confirmed with the customer']},
+    amber: {text:'The meeting covered an open concern that has not yet been fully resolved. '+m.custName+' remains engaged overall but wants clarity before things move forward. A follow-up was agreed to close this out.', sentiment:54, concerns:['Outstanding concern raised — needs a clear resolution'], opportunities:['Relationship remains strong if the concern is addressed promptly'], decisions:['Follow-up call agreed to resolve the open issue']},
+    red: {text:'This was an important re-engagement conversation with '+m.custName+' after a period of limited contact. Some frustration came through, but the customer was willing to talk it through.', sentiment:31, concerns:['Customer expressed frustration about lack of recent contact', 'Risk of churn if not addressed quickly'], opportunities:[], decisions:['You committed to a clear recovery plan with specific dates']}
+  };
+  var t = templates[health];
+  var summaryText = t.text;
+  if(liveNotes && liveNotes.trim()) summaryText += ' Your notes from the call: "'+liveNotes.trim()+'"';
+  var actionItems = [];
+  if(health==='red'){ actionItems.push({text:'Send recovery plan with specific commitments', due:'Tomorrow', urgent:true}); actionItems.push({text:'Schedule a follow-up call within 7 days', due:'This week', urgent:true}); }
+  else if(health==='amber'){ actionItems.push({text:'Resolve the outstanding concern raised in this meeting', due:'This week', urgent:false}); }
+  else { actionItems.push({text:'Follow up on expansion interest', due:'Next week', urgent:false}); }
+  return {summaryText:summaryText, sentiment:t.sentiment, concerns:t.concerns, opportunities:t.opportunities, decisions:t.decisions, actionItems:actionItems};
+}
+
+function discardSummary(id) {
+  if(!confirm('Discard this AI summary? The meeting will go back to upcoming and nothing will be saved.')) return;
+  delete meetingUiState[id];
+  renderMeetingDetail();
+}
+
+async function approveSummary(id) {
+  var m = meetings.find(function(x){return String(x.id)===String(id);});
+  var state = meetingUiState[id];
+  if(!m || !state) return;
+  var editedText = document.getElementById('ai-summary-edit').value;
+  var s = state.aiSummary;
+
+  await DB.meetings.complete(m.id, editedText, s.sentiment);
+  for (var i=0; i<s.actionItems.length; i++) {
+    var a = s.actionItems[i];
+    await DB.tasks.create({customerId:m.custId, custName:m.custName, repName:repName, text:a.text, due:a.due, urgent:a.urgent, source:'AI'});
+  }
+  await DB.customers.updateSummary(m.custId, editedText);
+
+  if (SUPERB_CONFIG.DEMO_MODE) {
+    // Demo's timeline is a static dict, not computed from real rows —
+    // live mode's timeline already picks this up automatically from the
+    // meeting/task rows just written above, so this push is demo-only.
+    m.status = 'completed'; m.notes = editedText; m.sentiment = s.sentiment;
+    if(!custTimeline[m.custId]) custTimeline[m.custId] = [];
+    custTimeline[m.custId].unshift({type:'meeting', text:'Meeting — '+m.purpose+' · AI summary approved', sub:m.date+' · sentiment '+s.sentiment+'%', source:'ai'});
+  }
+
+  delete meetingUiState[id];
+  renderMeetingDetail();
+  renderMeetings();
+  renderTasks();
+  renderMyCustomers();
+  updateCrmNavBadges();
+  renderCrmOverview();
+  if(String(activeCustomerId) === String(m.custId)) renderCustomerDetail();
+}
+
+function openScheduler(custId) {
+  var select = document.getElementById('sched-customer');
+  select.innerHTML = myCustomers().map(function(c){return '<option value="'+c.id+'">'+escHtml(c.name)+'</option>';}).join('');
+  if(custId) select.value = custId;
+  document.getElementById('scheduler-overlay').style.display = 'flex';
+  toggleVideoFields();
+}
+
+function toggleVideoFields() {
+  var fmt = document.getElementById('sched-format').value;
+  document.getElementById('video-fields-wrap').style.display = fmt === 'video' ? 'block' : 'none';
+}
+
+function closeScheduler() { document.getElementById('scheduler-overlay').style.display = 'none'; }
+
+// ============================================
+// Global CRM search — customers, contacts,
+// meetings, tasks, opportunities. Scoped to
+// this rep's own data, same as everywhere else.
+// ============================================
+function openSearchPalette() {
+  document.getElementById('search-overlay').style.display = 'flex';
+  var input = document.getElementById('search-input');
+  input.value = '';
+  document.getElementById('search-results').innerHTML = '<div style="padding:.75rem;font-size:12px;color:#94a3b8">Start typing to search across your customers, contacts, meetings, tasks, and opportunities.</div>';
+  setTimeout(function(){ input.focus(); }, 50);
+}
+
+function closeSearchPalette() {
+  document.getElementById('search-overlay').style.display = 'none';
+}
+
+function runGlobalSearch() {
+  var q = document.getElementById('search-input').value.trim().toLowerCase();
+  var resultsEl = document.getElementById('search-results');
+  if(!q){
+    resultsEl.innerHTML = '<div style="padding:.75rem;font-size:12px;color:#94a3b8">Start typing to search across your customers, contacts, meetings, tasks, and opportunities.</div>';
+    return;
+  }
+
+  var mine = myCustomers();
+  var mineIds = mine.map(function(c){return c.id;});
+  var html = '';
+
+  var custMatches = mine.filter(function(c){return c.name.toLowerCase().indexOf(q)>-1 || c.sector.toLowerCase().indexOf(q)>-1 || c.location.toLowerCase().indexOf(q)>-1;});
+  if(custMatches.length){
+    html += '<div class="search-group-lbl">Customers</div>';
+    custMatches.forEach(function(c){
+      html += '<div class="search-result-row" onclick="closeSearchPalette();openCustomer(\''+c.id+'\')"><div class="search-result-icon" style="background:#ede9fe;color:#7c3aed">🤝</div><div><div style="font-size:13px;font-weight:500">'+escHtml(c.name)+'</div><div style="font-size:11px;color:#94a3b8">'+escHtml(c.sector)+' · '+escHtml(c.location)+'</div></div></div>';
+    });
+  }
+
+  var contactMatches = [];
+  mineIds.forEach(function(cid){
+    (custContacts[cid]||[]).forEach(function(ct){
+      if(ct.name.toLowerCase().indexOf(q)>-1 || (ct.title||'').toLowerCase().indexOf(q)>-1 || (ct.email||'').toLowerCase().indexOf(q)>-1){
+        var cust = customers.find(function(c){return c.id===cid;});
+        contactMatches.push({contact:ct, custId:cid, custName:cust?cust.name:''});
+      }
+    });
+  });
+  if(contactMatches.length){
+    html += '<div class="search-group-lbl">Contacts</div>';
+    contactMatches.forEach(function(m){
+      html += '<div class="search-result-row" onclick="closeSearchPalette();openCustomer(\''+m.custId+'\')"><div class="search-result-icon" style="background:#ede9fe;color:#7c3aed">👤</div><div><div style="font-size:13px;font-weight:500">'+escHtml(m.contact.name)+'</div><div style="font-size:11px;color:#94a3b8">'+escHtml(m.contact.title||'')+' · '+escHtml(m.custName)+'</div></div></div>';
+    });
+  }
+
+  var meetMatches = myMeetings().filter(function(m){return m.purpose.toLowerCase().indexOf(q)>-1 || m.custName.toLowerCase().indexOf(q)>-1;});
+  if(meetMatches.length){
+    html += '<div class="search-group-lbl">Meetings</div>';
+    meetMatches.forEach(function(m){
+      html += '<div class="search-result-row" onclick="closeSearchPalette();openMeeting(\''+m.id+'\')"><div class="search-result-icon" style="background:#ede9fe;color:#7c3aed">📅</div><div><div style="font-size:13px;font-weight:500">'+escHtml(m.custName)+' — '+escHtml(m.purpose)+'</div><div style="font-size:11px;color:#94a3b8">'+escHtml(m.date)+' · '+escHtml(m.status)+'</div></div></div>';
+    });
+  }
+
+  var taskMatches = myTasks().filter(function(t){return t.text.toLowerCase().indexOf(q)>-1 || t.custName.toLowerCase().indexOf(q)>-1;});
+  if(taskMatches.length){
+    html += '<div class="search-group-lbl">Tasks</div>';
+    taskMatches.forEach(function(t){
+      html += '<div class="search-result-row" onclick="closeSearchPalette();pg(\'tasks\',document.querySelector(\'.ni[onclick*=tasks]\'))"><div class="search-result-icon" style="background:#ede9fe;color:#7c3aed">✅</div><div><div style="font-size:13px;font-weight:500">'+escHtml(t.text)+'</div><div style="font-size:11px;color:#94a3b8">'+escHtml(t.custName)+(t.done?' · completed':' · due '+escHtml(t.due))+'</div></div></div>';
+    });
+  }
+
+  var oppMatches = opportunities.filter(function(o){return mineIds.indexOf(o.custId)>-1 && (o.desc.toLowerCase().indexOf(q)>-1 || o.custName.toLowerCase().indexOf(q)>-1);});
+  if(oppMatches.length){
+    html += '<div class="search-group-lbl">Opportunities</div>';
+    oppMatches.forEach(function(o){
+      html += '<div class="search-result-row" onclick="closeSearchPalette();pg(\'opportunities\',document.querySelector(\'.ni[onclick*=opportunities]\'))"><div class="search-result-icon" style="background:#ede9fe;color:#7c3aed">📈</div><div><div style="font-size:13px;font-weight:500">'+escHtml(o.custName)+' — '+escHtml(o.desc)+'</div><div style="font-size:11px;color:#94a3b8">£'+o.value+'/mo · '+oppStageLabel[o.stage]+'</div></div></div>';
+    });
+  }
+
+  if(!html) html = '<div style="padding:.75rem;font-size:12px;color:#94a3b8">No results for "'+escHtml(q)+'".</div>';
+  resultsEl.innerHTML = html;
+}
+
+document.addEventListener('keydown', function(e){
+  if((e.metaKey || e.ctrlKey) && e.key.toLowerCase()==='k'){
+    e.preventDefault();
+    openSearchPalette();
+  }
+  if(e.key === 'Escape'){
+    closeSearchPalette();
+  }
+});
+
+
+async function saveScheduledMeeting() {
+  var rawCustId = document.getElementById('sched-customer').value;
+  var custId = SUPERB_CONFIG.DEMO_MODE ? parseInt(rawCustId) : rawCustId;
+  var purpose = document.getElementById('sched-purpose').value;
+  var format = document.getElementById('sched-format').value;
+  var date = document.getElementById('sched-date').value;
+  var time = document.getElementById('sched-time').value;
+  var custEmail = document.getElementById('sched-cust-email').value.trim();
+  var platform = document.getElementById('sched-platform').value;
+  var meetingLink = document.getElementById('sched-link').value.trim();
+  if(!date || !time){ alert('Please choose a date and time'); return; }
+  if(format==='video' && !meetingLink){ if(!confirm('No meeting link added — schedule anyway and add one later?')) return; }
+  var cust = customers.find(function(c){return String(c.id)===String(custId);});
+  await DB.meetings.create({customerId:custId, custName:cust?cust.name:'', purpose:purpose, format:format, dateStr:date, time:time, custEmail:custEmail, platform:platform, meetingLink:meetingLink});
+  closeScheduler();
+  document.getElementById('sched-cust-email').value = '';
+  document.getElementById('sched-link').value = '';
+  renderMeetings();
+  updateCrmNavBadges();
+  if(String(activeCustomerId) === String(custId)) renderCustomerDetail();
+  pg('meetings', document.querySelector('.ni[onclick*=meetings]'));
+}
+
+// ============================================
+// Customer pulse surveys — first-party signal
+// straight from the customer, not just inferred
+// from meeting sentiment.
+// ============================================
+var custPulse = {
+  1: {score:4, comment:'Really happy with the service overall — would love slightly faster response times on support tickets.', date:'2 weeks ago'}
+};
+
+function sendPulseSurvey(custId) {
+  var btn = document.getElementById('pulse-btn-'+custId);
+  btn.disabled = true;
+  btn.textContent = 'Sending...';
+  setTimeout(function(){
+    // Demo: simulate a response arriving
+    custPulse[custId] = {score:4, comment:'Things are going well, no major complaints right now.', date:'Just now'};
+    renderCustomerDetail();
+  }, 1200);
+}
+
+// ============================================
+// AI relationship recap — reciprocity feature.
+// A short, genuine note the rep can send back
+// to the customer, not a sales pitch.
+// ============================================
+function draftRecap(custId) {
+  var c = customers.find(function(x){return x.id===custId;});
+  var h = getCustomerHealth(c);
+  var text;
+  if(h.key==='green'){
+    text = 'Just wanted to say thank you for being such a great partner over the last few months. It has been genuinely enjoyable working with '+c.name+' — the conversations have been open and the relationship has felt like a real partnership, not just a subscription. Looking forward to what is next.';
+  } else if(h.key==='amber'){
+    text = 'Wanted to drop a note to say I appreciate you working through things with us recently. I know it has not been entirely smooth, and I am grateful for your patience while we get things fully resolved for '+c.name+'.';
+  } else {
+    text = 'It has been a little while since we last properly connected, and I wanted to reach out directly. I value the relationship with '+c.name+' and want to make sure we are genuinely supporting you well — let me know a good time to talk.';
+  }
+  document.getElementById('recap-output-'+custId).innerHTML = '<div style="background:#faf5ff;border:1px solid #e9d5ff;border-radius:8px;padding:10px;font-size:12px;color:#334155;line-height:1.7;margin-bottom:8px">'+escHtml(text)+'</div><button class="btn btn-o" onclick="navigator.clipboard.writeText('+"'"+text.replace(/'/g,"\\'")+"'"+');this.textContent=\'Copied ✓\'">Copy to send</button>';
+}
+
+// ============================================
+// Opportunities pipeline
+// ============================================
+var opportunities = [
+  {id:1, custId:1, custName:'Loch Industries', desc:'Edinburgh site expansion', value:299, stage:'proposal', closeDate:'2026-07-15'},
+  {id:2, custId:5, custName:'Glen Partners', desc:'Renewal upsell — additional seats', value:50, stage:'identified', closeDate:''}
+];
+var oppStages = ['identified','proposal','won','lost'];
+var oppStageLabel = {identified:'Identified', proposal:'Proposal sent', won:'Won', lost:'Lost'};
+
+function toggleAddOpp() {
+  var form = document.getElementById('add-opp-form');
+  if(form.style.display !== 'block'){
+    document.getElementById('newopp-customer').innerHTML = myCustomers().map(function(c){return '<option value="'+c.id+'">'+escHtml(c.name)+'</option>';}).join('');
+  }
+  form.style.display = form.style.display === 'block' ? 'none' : 'block';
+}
+
+async function saveNewOpportunity() {
+  var rawCustId = document.getElementById('newopp-customer').value;
+  var custId = SUPERB_CONFIG.DEMO_MODE ? parseInt(rawCustId) : rawCustId;
+  var desc = document.getElementById('newopp-desc').value.trim();
+  var value = parseInt(document.getElementById('newopp-value').value) || 0;
+  var closeDate = document.getElementById('newopp-close').value;
+  if(!desc){ alert('Please describe the opportunity'); return; }
+  var cust = customers.find(function(c){return String(c.id)===String(custId);});
+  await DB.opportunities.add(custId, cust?cust.name:'', desc, value, closeDate);
+  document.getElementById('newopp-desc').value = '';
+  document.getElementById('newopp-value').value = '';
+  document.getElementById('newopp-close').value = '';
+  toggleAddOpp();
+  renderOpportunities();
+  renderCrmOverview();
+}
+
+async function moveOppStage(id, direction) {
+  var o = opportunities.find(function(x){return String(x.id)===String(id);});
+  if(!o) return;
+  var idx = oppStages.indexOf(o.stage);
+  var newStage = direction==='lost' ? 'lost' : (idx < 2 ? oppStages[idx+1] : o.stage);
+  if (newStage !== o.stage) await DB.opportunities.setStage(id, newStage);
+  renderOpportunities();
+  renderCrmOverview();
+}
+
+// Fetches real last-activity timelines for a set of customers in
+// parallel, rather than reading a `custTimeline` cache that's only
+// populated after visiting that specific customer's page — which
+// would otherwise show "No recorded activity" even when there is some.
+async function fetchLastActivityMap(custIds) {
+  var uniqueIds = Array.from(new Set(custIds));
+  var entries = await Promise.all(uniqueIds.map(async function(id){
+    var timeline = await DB.customers.timeline(id);
+    return [id, timeline.length ? timeline[0].sub : null];
+  }));
+  var map = {};
+  entries.forEach(function(e){ map[e[0]] = e[1]; });
+  return map;
+}
+
+async function renderOpportunities() {
+  opportunities = await DB.opportunities.list();
+  var mine = opportunities.filter(function(o){ return myCustomers().some(function(c){return String(c.id)===String(o.custId);}); });
+  var lastActivityMap = await fetchLastActivityMap(mine.map(function(o){return o.custId;}));
+
+  // Pipeline summary — computed from real data, not hard-coded
+  var summaryHtml = '<div class="crm-stat-grid" style="margin-bottom:1rem">';
+  oppStages.forEach(function(stage){
+    var stageTotal = mine.filter(function(o){return o.stage===stage;}).reduce(function(sum,o){return sum+o.value;},0);
+    summaryHtml += '<div class="crm-stat-card"><div class="crm-stat-l">'+oppStageLabel[stage]+'</div><div class="crm-stat-v">£'+stageTotal+'/mo</div></div>';
+  });
+  summaryHtml += '</div>';
+
+  var html = '<div class="opp-pipeline-grid">';
+  oppStages.forEach(function(stage){
+    var stageOpps = mine.filter(function(o){return o.stage===stage;});
+    html += '<div><div style="font-size:11px;font-weight:600;color:#64748b;margin-bottom:.5rem">'+oppStageLabel[stage]+'</div>';
+    stageOpps.forEach(function(o){
+      var lastActivity = lastActivityMap[o.custId];
+      var closeDateDisplay = o.closeDate ? new Date(o.closeDate).toLocaleDateString('en-GB', {day:'numeric', month:'short', year:'numeric'}) : 'Not set';
+      html += '<div class="card" style="padding:.75rem;margin-bottom:.5rem">';
+      html += '<div style="font-size:12px;font-weight:600">'+escHtml(o.custName)+'</div>';
+      html += '<div style="font-size:11px;color:#64748b;margin:4px 0">'+escHtml(o.desc)+'</div>';
+      html += '<div style="font-size:12px;font-weight:600;color:#16a34a;margin-bottom:6px">£'+o.value+'/mo</div>';
+      html += '<div style="font-size:10px;color:#94a3b8;margin-bottom:2px">Last activity: '+(lastActivity ? escHtml(lastActivity) : 'No recorded activity')+'</div>';
+      html += '<div style="font-size:10px;color:#94a3b8;margin-bottom:2px">Expected close: '+escHtml(closeDateDisplay)+'</div>';
+      html += '<div style="font-size:10px;color:#94a3b8;margin-bottom:6px">Owner: '+escHtml(repName)+'</div>';
+      if(stage!=='won' && stage!=='lost'){
+        html += '<div style="display:flex;gap:4px"><button class="btn btn-o" style="padding:4px 8px;font-size:10px" onclick="moveOppStage(\''+o.id+'\',\'forward\')">Move on →</button><button class="btn btn-o" style="padding:4px 8px;font-size:10px;color:#dc2626" onclick="moveOppStage(\''+o.id+'\',\'lost\')">Mark lost</button></div>';
+      }
+      html += '</div>';
+    });
+    if(!stageOpps.length) html += '<div class="empty" style="padding:.5rem 0">—</div>';
+    html += '</div>';
+  });
+  html += '</div>';
+  document.getElementById('opp-pipeline').innerHTML = summaryHtml + html;
+}
+
+// ============================================
+// Private reflection chart — own mood only,
+// never shared with the manager.
+// ============================================
+var myMoodHistory = [2.8, 3.0, 3.1, 3.3, 3.4, 3.6, 3.8, 4.0];
+
+// ============================================================
+// My 1-to-1s (employee view) — read the agenda/notes your
+// manager wrote, and tick off your own actions. Full notes are
+// shown here (unlike wellbeing check-ins) because a 1-to-1 is a
+// named, two-way conversation, not an anonymous submission.
+// ============================================================
+var activeMyOtoId = null;
+
+async function renderMyOneToOnes() {
+  var list = await DB.oneToOnes.listMine();
+  var upcoming = list.filter(function(o){return o.status==='upcoming';});
+  var badge = document.getElementById('nav-my1to1-count');
+  if (badge) badge.textContent = upcoming.length || '';
+
+  var html = '';
+  list.forEach(function(o){
+    html += '<div class="ri" style="justify-content:space-between;cursor:pointer" onclick="openMyOto(\''+o.id+'\')"><div><div class="ri-txt" style="font-weight:600">'+escHtml(o.date)+' at '+escHtml(o.time)+'</div></div><span class="sp '+(o.status==='upcoming'?'sp-purple':'sp-a')+'">'+escHtml(o.status)+'</span></div>';
+  });
+  document.getElementById('my-oto-list').innerHTML = html || '<div class="empty">No 1-to-1s scheduled yet.</div>';
+}
+
+function openMyOto(id) {
+  activeMyOtoId = id;
+  renderMyOtoDetail();
+  pg('myoto-detail', null);
+}
+
+function renderMyOtoDetail() {
+  var o = myOneToOnes.find(function(x){return String(x.id)===String(activeMyOtoId);});
+  if(!o) return;
+  var html = '';
+  html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem"><div style="font-size:16px;font-weight:600">'+escHtml(o.date)+' at '+escHtml(o.time)+'</div><span class="sp '+(o.status==='upcoming'?'sp-purple':'sp-a')+'">'+escHtml(o.status)+'</span></div>';
+  if(o.notes){
+    html += '<div class="card"><div class="ct">📝 Notes from this 1-to-1</div><div style="font-size:12.5px;color:#334155;line-height:1.7">'+escHtml(o.notes)+'</div></div>';
+  } else {
+    html += '<div class="card"><div class="ct">📝 Notes</div><div class="empty">Notes will appear here once this 1-to-1 has taken place.</div></div>';
+  }
+  if(o.actions && o.actions.length){
+    html += '<div class="card"><div class="ct">✅ Actions</div>';
+    o.actions.forEach(function(a){
+      html += '<div class="action-row"><input type="checkbox" '+(a.done?'checked':'')+' onchange="toggleMyOtoAction(\''+o.id+'\',\''+a.id+'\',this.checked)"><span class="action-row-text'+(a.done?' done':'')+'">'+escHtml(a.text)+'</span></div>';
+    });
+    html += '</div>';
+  }
+  document.getElementById('my-oto-detail-body').innerHTML = html;
+}
+
+async function toggleMyOtoAction(otoId, actionId, checked) {
+  var o = myOneToOnes.find(function(x){return String(x.id)===String(otoId);});
+  var a = o.actions.find(function(x){return x.id===actionId;});
+  a.done = checked;
+  await DB.oneToOnes.toggleAction(actionId, checked);
+  renderMyOtoDetail();
+}
+
+// ============================================================
+// My Recognition — simple, read-only inbox.
+// ============================================================
+async function renderMyRecognition() {
+  var list = await DB.recognition.listMine();
+  var badge = document.getElementById('nav-my-rec-count');
+  if (badge) badge.textContent = list.length || '';
+  var html = '';
+  list.forEach(function(r){
+    html += '<div class="rec-card"><div class="rec-card-hdr">🌟 From your manager</div><div style="font-size:12.5px;color:#334155;line-height:1.6">'+escHtml(r.message)+'</div><div style="font-size:11px;color:#94a3b8;margin-top:4px">'+escHtml(r.date)+'</div></div>';
+  });
+  document.getElementById('my-rec-list').innerHTML = html || '<div class="empty">No recognition yet — it\'ll show up here as soon as your manager sends some.</div>';
+}
+
+function renderReflectionChart() {
+  var max = 5;
+  var html = '';
+  myMoodHistory.forEach(function(v, i){
+    var pct = (v/max)*100;
+    var isLast = i === myMoodHistory.length-1;
+    html += '<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;height:100%;justify-content:flex-end">';
+    html += '<div style="font-size:9px;color:#475569">'+v.toFixed(1)+'</div>';
+    html += '<div style="width:100%;border-radius:3px 3px 0 0;height:'+pct+'%;background:'+(isLast?'#16a34a':'#bbf7d0')+'"></div>';
+    html += '<div style="font-size:8px;color:#94a3b8">W'+(i+1)+'</div>';
+    html += '</div>';
+  });
+  document.getElementById('reflection-chart').innerHTML = html;
+}
+
+async function initApp() {
+  var ok = await resolveSession();
+  if (!ok) return; // resolveSession already redirected to portal.html
+
+  if (!SUPERB_CONFIG.DEMO_MODE) {
+    document.getElementById('demo-bar').style.display = 'none';
+    var titleEl = document.querySelector('#pg-home .pg-title');
+    if (titleEl) titleEl.textContent = 'Welcome back, ' + SESSION.employeeName.split(' ')[0] + ' 👋';
+    repName = SESSION.employeeName; // myCustomers()/myTasks()/myMeetings() filter by this — keeping them unchanged rather than rewriting every reader
+    if (!SESSION.isRep) {
+      var nav = document.getElementById('relationships-nav');
+      if (nav) nav.style.display = 'none';
+    }
+  }
+
+  renderMyCustomers();
+  renderTasks();
+  renderMeetings();
+  updateCrmNavBadges();
+  renderOpportunities();
+  renderReflectionChart();
+  renderCrmOverview();
+  renderMyOneToOnes();
+  renderMyRecognition();
+}
+
+initApp();
+</script>
+</body>
+</html>

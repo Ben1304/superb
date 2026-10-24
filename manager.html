@@ -1,0 +1,3017 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Superb Manager — Demo</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f8fafc;color:#0f172a;font-size:14px}
+.demo-bar{background:#7c3aed;color:white;text-align:center;padding:8px;font-size:12px;font-weight:500;position:sticky;top:0;z-index:200}
+.demo-bar a{color:#ddd6fe;text-decoration:underline;margin-left:8px;cursor:pointer}
+.app{display:flex;min-height:calc(100vh - 36px)}
+.sidebar{width:215px;background:white;border-right:1px solid #e2e8f0;display:flex;flex-direction:column;padding:1rem .75rem;gap:1px;flex-shrink:0;position:sticky;top:36px;height:calc(100vh - 36px);overflow-y:auto}
+.brand{display:flex;align-items:center;gap:8px;margin-bottom:1rem;padding:0 4px}
+.brand-icon{width:30px;height:30px;border-radius:8px;background:#ede9fe;display:flex;align-items:center;justify-content:center;font-size:15px}
+.brand-name{font-size:14px;font-weight:600}
+.brand-tag{font-size:10px;color:#7c3aed;background:#ede9fe;padding:1px 6px;border-radius:4px;margin-left:auto}
+.ns{font-size:10px;color:#94a3b8;padding:8px 6px 2px;letter-spacing:.06em;text-transform:uppercase}
+.ni{display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:7px;cursor:pointer;font-size:12.5px;color:#475569}
+.ni:hover{background:#f1f5f9;color:#0f172a}
+.ni.on{background:#ede9fe;color:#7c3aed;font-weight:500}
+.nb{margin-left:auto;background:#dc2626;color:white;font-size:10px;border-radius:10px;padding:1px 5px}
+.nb-o{background:#7c3aed}
+.main{flex:1;overflow-y:auto;padding:1.5rem}
+.pg{display:none}.pg.on{display:block}
+.pg-title{font-size:20px;font-weight:600;margin-bottom:2px}
+.pg-sub{font-size:12px;color:#64748b;margin-bottom:1.25rem}
+.card{background:white;border:1px solid #e2e8f0;border-radius:12px;padding:1rem;margin-bottom:.875rem}
+.ct{font-size:13px;font-weight:600;margin-bottom:.75rem;display:flex;align-items:center;gap:6px}
+.mg{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:1rem}
+.mc{background:white;border:1px solid #e2e8f0;border-radius:10px;padding:.875rem}
+.ml{font-size:11px;color:#94a3b8;margin-bottom:4px}
+.mv{font-size:22px;font-weight:600}
+.mc-c{font-size:11px;margin-top:2px}
+.up{color:#16a34a}.dn{color:#dc2626}
+.mbar{display:flex;align-items:center;gap:8px;margin-bottom:5px}
+.mbar-l{font-size:12px;color:#475569;width:74px;flex-shrink:0}
+.mbar-t{flex:1;background:#f1f5f9;border-radius:4px;height:7px;overflow:hidden}
+.mbar-f{height:100%;border-radius:4px}
+.mbar-p{font-size:11px;color:#94a3b8;width:30px;text-align:right}
+.ri{display:flex;align-items:flex-start;gap:10px;padding:9px 0;border-bottom:1px solid #f8fafc}
+.ri:last-child{border-bottom:none}
+.ri-txt{font-size:12px;color:#0f172a;line-height:1.5;flex:1}
+.ri-sub{font-size:11px;color:#94a3b8;margin-top:2px}
+.tag{display:inline-flex;font-size:10px;padding:2px 7px;border-radius:6px;margin-bottom:4px}
+.tw{background:#fef9c3;color:#a16207}.tg{background:#dcfce7;color:#16a34a}.tn{background:#dbeafe;color:#1d4ed8}.tr{background:#fee2e2;color:#dc2626}
+.empty{text-align:center;padding:2rem 1rem;color:#94a3b8;font-size:12px}
+.hol-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #f8fafc}
+.hol-row:last-child{border-bottom:none}
+.hol-info{flex:1}
+.hol-name{font-size:13px;font-weight:500}
+.hol-dates{font-size:11px;color:#64748b;margin-top:1px}
+.hol-actions{display:flex;gap:6px}
+.btn{padding:7px 14px;border-radius:7px;border:none;font-size:12px;font-weight:500;cursor:pointer}
+.btn-g{background:#16a34a;color:white}.btn-g:hover{opacity:.9}
+.btn-r{background:#dc2626;color:white}.btn-r:hover{opacity:.9}
+.btn-p{background:#7c3aed;color:white}.btn-p:hover{opacity:.9}
+.btn-o{background:white;color:#334155;border:1px solid #e2e8f0}.btn-o:hover{background:#f8fafc}
+.btn-full{width:100%;padding:10px;margin-top:8px}
+.sp{font-size:10px;padding:2px 8px;border-radius:6px}
+.sp-p{background:#fef9c3;color:#a16207}.sp-a{background:#dcfce7;color:#16a34a}.sp-d{background:#fee2e2;color:#dc2626}
+.sp-purple{background:#ede9fe;color:#7c3aed}
+.health-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.hd-green{background:#16a34a}.hd-amber{background:#a16207}.hd-red{background:#dc2626}
+.cust-avatar{width:36px;height:36px;border-radius:9px;background:#ede9fe;color:#7c3aed;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;flex-shrink:0}
+.cust-row{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid #f8fafc;cursor:pointer}
+.cust-row:last-child{border-bottom:none}
+.cust-row:hover{background:#f8fafc;margin:0 -1rem;padding-left:1rem;padding-right:1rem;border-radius:8px}
+.cust-name{font-size:13px;font-weight:600;color:#0f172a}
+.cust-sub{font-size:11px;color:#64748b;margin-top:1px}
+.crm-tabs{display:flex;gap:6px;margin-bottom:1rem}
+.crm-tab{padding:6px 14px;border-radius:8px;border:1px solid #e2e8f0;background:#f8fafc;color:#64748b;font-size:12px;font-weight:500;cursor:pointer}
+.crm-tab.on{background:#ede9fe;color:#7c3aed;border-color:#ddd6fe}
+.ai-box{background:#faf5ff;border:1px solid #e9d5ff;border-radius:12px;padding:1rem;margin-bottom:.875rem}
+.ai-box-h{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:#7c3aed;margin-bottom:.5rem}
+.ai-box-t{font-size:13px;color:#334155;line-height:1.7}
+.stat-mini-row{display:flex;gap:8px;margin-bottom:1rem}
+.stat-mini{flex:1;background:#f8fafc;border-radius:8px;padding:.6rem .75rem}
+.stat-mini-l{font-size:10px;color:#94a3b8}
+.stat-mini-v{font-size:13px;font-weight:600;color:#0f172a;margin-top:2px}
+.task-check{width:18px;height:18px;border-radius:5px;border:1.5px solid #e2e8f0;flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:11px}
+.task-check.checked{background:#16a34a;border-color:#16a34a;color:white}
+.rec-indicator{display:flex;align-items:center;gap:6px;padding:5px 12px;background:#fee2e2;border-radius:20px;width:fit-content;font-size:11px;font-weight:600;color:#dc2626;margin-bottom:.75rem}
+.rec-dot{width:7px;height:7px;border-radius:50%;background:#dc2626;animation:pulse 1.2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+.sentiment-track{flex:1;height:8px;background:#f1f5f9;border-radius:4px;overflow:hidden}
+.sentiment-fill{height:100%;border-radius:4px}
+.ai-loading-box{text-align:center;padding:2rem 1rem}
+.ai-loading-spin{width:28px;height:28px;border:3px solid #e9d5ff;border-top-color:#7c3aed;border-radius:50%;margin:0 auto 12px;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.ai-section-lbl{font-size:10px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;margin-top:10px}
+.ai-section-lbl:first-child{margin-top:0}
+.ai-section-item{display:flex;align-items:flex-start;gap:6px;font-size:12px;color:#334155;padding:2px 0}
+.addon-on{background:#dcfce7;color:#16a34a;font-size:11px;padding:2px 8px;border-radius:6px}
+.codebox{background:#faf5ff;border:1px solid #ddd6fe;border-radius:12px;padding:1.5rem;text-align:center;margin-bottom:1rem}
+.codeval{font-size:34px;font-weight:600;color:#7c3aed;letter-spacing:.15em;font-family:monospace;margin:8px 0}
+.course-item{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #f8fafc}
+.course-item:last-child{border-bottom:none}
+.ci-icon{width:36px;height:36px;border-radius:8px;background:#f1f5f9;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.field{margin-bottom:10px}
+.field label{font-size:12px;font-weight:500;color:#334155;display:block;margin-bottom:3px}
+.field input,.field select,.field textarea{width:100%;padding:8px 11px;border:1px solid #e2e8f0;border-radius:7px;font-size:13px;font-family:inherit;background:white}
+.ta{width:100%;padding:8px 11px;border:1px solid #e2e8f0;border-radius:7px;font-size:13px;font-family:inherit;resize:vertical;min-height:75px}
+.ok{background:#dcfce7;color:#16a34a;font-size:12px;padding:8px 12px;border-radius:7px;margin-top:8px;display:none}
+.alert-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:4px}
+.eap-info{background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:1rem;font-size:13px;color:#475569;line-height:1.7}
+.hol-tab{padding:7px 16px;border-radius:8px;border:1px solid #e2e8f0;background:#f8fafc;color:#64748b;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit}
+.hol-tab.on{background:#ede9fe;color:#7c3aed;border-color:#ddd6fe}
+.cal-grid{display:grid;grid-template-columns:100px repeat(31,1fr);font-size:11px;border:1px solid #f1f5f9;border-radius:8px;overflow:hidden}
+.cal-head{background:#f8fafc;padding:5px 2px;text-align:center;font-weight:600;color:#64748b;border-bottom:1px solid #e2e8f0;border-right:1px solid #f1f5f9;font-size:10px}
+.cal-head.today-col{background:#ede9fe;color:#7c3aed}
+.cal-name{padding:6px 8px;font-size:11px;font-weight:500;color:#334155;border-bottom:1px solid #f8fafc;border-right:1px solid #f1f5f9;background:white;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cal-cell{border-bottom:1px solid #f8fafc;border-right:1px solid #f1f5f9;height:28px;position:relative}
+.cal-cell.off{background:#dcfce7}
+.cal-cell.pending{background:#fef9c3}
+.cal-cell.today-col{background:#faf5ff}
+.cal-cell.weekend{background:#f8fafc}
+.dept-filter{padding:5px 12px;border-radius:20px;border:1px solid #e2e8f0;background:#f8fafc;color:#64748b;font-size:11px;font-weight:500;cursor:pointer}
+.dept-filter.on{color:white;border-color:transparent}
+.legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:#475569}
+.legend-dot{width:12px;height:12px;border-radius:3px;flex-shrink:0}
+.dept-section{margin-bottom:1.25rem}
+.dept-title{font-size:12px;font-weight:600;color:#475569;margin-bottom:.5rem;padding:4px 8px;background:#f8fafc;border-radius:6px}
+.search-box{width:100%;padding:9px 12px;border:1px solid #e2e8f0;border-radius:8px;font-size:13px;font-family:inherit;background:white;margin-bottom:.75rem}
+.search-box:focus{outline:2px solid #7c3aed;border-color:transparent}
+.allow-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #f8fafc}
+.allow-row:last-child{border-bottom:none}
+.allow-name{font-size:13px;font-weight:500;width:110px;flex-shrink:0}
+.allow-track{flex:1;background:#f1f5f9;border-radius:4px;height:8px;overflow:hidden}
+.allow-fill{height:100%;border-radius:4px}
+.allow-txt{font-size:11px;color:#64748b;width:90px;text-align:right;flex-shrink:0}
+.allow-edit{display:flex;align-items:center;gap:6px;flex-shrink:0}
+.allow-edit-input{width:56px;padding:5px 7px;border:1px solid #e2e8f0;border-radius:6px;font-size:12px;text-align:center}
+.allow-save-btn{padding:5px 10px;font-size:11px}
+.reply-box{background:#f8fafc;border-radius:8px;padding:8px 10px;margin-top:8px}
+.reply-existing{font-size:12px;color:#334155;background:#ede9fe;border-radius:6px;padding:8px 10px;margin-top:8px}
+.reply-existing b{color:#7c3aed}
+.reply-input-row{display:flex;gap:6px;margin-top:8px}
+.reply-input-row input{flex:1;padding:7px 10px;border:1px solid #e2e8f0;border-radius:6px;font-size:12px;font-family:inherit}
+.reply-toggle{font-size:11px;color:#7c3aed;cursor:pointer;margin-top:6px;display:inline-block}
+.reply-toggle:hover{text-decoration:underline}
+.conflict-warn{background:#fef9c3;border:1px solid #fde68a;border-radius:7px;padding:8px 10px;font-size:11px;color:#a16207;margin:6px 0}
+.trend-bars{display:flex;align-items:flex-end;gap:8px;height:90px;padding-top:10px}
+.trend-bar-wrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;height:100%;justify-content:flex-end}
+.trend-bar{width:100%;border-radius:4px 4px 0 0;min-height:3px}
+.trend-lbl{font-size:9px;color:#94a3b8}
+.trend-val{font-size:10px;color:#475569;font-weight:600}
+/* Action Centre */
+.action-item{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid #f8fafc}
+.action-item:last-child{border-bottom:none}
+.action-icon{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+.action-body{flex:1;min-width:0}
+.action-title{font-size:12.5px;font-weight:600;color:#0f172a}
+.action-sub{font-size:11px;color:#94a3b8;margin-top:1px}
+.action-btn{padding:6px 13px;font-size:11.5px;font-weight:500;border-radius:7px;border:1px solid #e2e8f0;background:white;color:#334155;cursor:pointer;flex-shrink:0}
+.action-btn:hover{background:#f8fafc}
+.action-empty{text-align:center;padding:1.5rem;color:#94a3b8;font-size:12px}
+/* Employee profile */
+.emp-profile-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:.75rem}
+.emp-profile-avatar{width:48px;height:48px;border-radius:50%;background:#ede9fe;color:#7c3aed;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:600;flex-shrink:0}
+.emp-quick-actions{display:flex;gap:8px;flex-wrap:wrap}
+/* 1-to-1s */
+.oto-item{padding:12px 0;border-bottom:1px solid #f8fafc}
+.oto-item:last-child{border-bottom:none}
+.oto-agenda-lbl{font-size:11px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:.05em;margin:10px 0 4px}
+.oto-agenda-lbl:first-child{margin-top:0}
+.action-row{display:flex;align-items:center;gap:8px;padding:4px 0}
+.action-row input[type=checkbox]{width:15px;height:15px;flex-shrink:0}
+.action-row-text{flex:1;font-size:12.5px;color:#334155}
+.action-row-text.done{text-decoration:line-through;color:#94a3b8}
+/* Recognition */
+.rec-card{background:white;border:1px solid #fde68a;background:#fffbeb;border-radius:12px;padding:1rem;margin-bottom:.75rem}
+.rec-card-hdr{display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:600;color:#a16207;margin-bottom:4px}
+</style>
+</head>
+<body>
+
+<div class="demo-bar" id="demo-bar">🎭 DEMO MODE — This is a live preview with sample data. <a onclick="window.open('https://superbwellness.co.uk','_blank')">Sign up for real at superbwellness.co.uk</a></div>
+
+<div class="app">
+  <div class="sidebar">
+    <div class="brand"><div class="brand-icon">🏢</div><span class="brand-name">Superb</span><span class="brand-tag">Manager</span></div>
+    <div style="padding:0 2px 10px">
+      <div style="font-size:9px;color:#94a3b8;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Viewing as</div>
+      <select id="user-switcher" onchange="switchUser(this.value)" style="width:100%;padding:6px 8px;border:1px solid #e2e8f0;border-radius:7px;font-size:11px;font-family:inherit;background:#f8fafc;color:#0f172a;font-weight:500">
+        <option value="manager">👑 Manager (all access)</option>
+        <option value="Jamie T.">Jamie T. — rep</option>
+        <option value="Sarah M.">Sarah M. — rep</option>
+        <option value="Marcus K.">Marcus K. — rep</option>
+        <option value="Robin P.">Robin P. — rep</option>
+      </select>
+    </div>
+    <span class="ns">Overview</span>
+    <div class="ni on" onclick="pg('dash',this)">📊 Dashboard</div>
+    <div class="ni" onclick="pg('alerts',this)">🔔 Alerts <span class="nb">3</span></div>
+    <span class="ns">Team</span>
+    <div class="ni" onclick="pg('feedback',this)">✉️ Feedback <span class="nb">6</span></div>
+    <div class="ni" onclick="pg('challenges',this)">🏆 Competitions</div>
+    <div class="ni" onclick="pg('employees',this)">👥 Employees</div>
+    <div class="ni" onclick="pg('wellbeing',this);renderTeamWellbeing()">💚 Team Wellbeing</div>
+    <div class="ni" onclick="pg('onetoones',this);renderOneToOnes()">🗣️ 1-to-1s <span class="nb nb-o" id="nav-1to1-count"></span></div>
+    <div class="ni" onclick="pg('recognition',this);renderRecognitionPage()">🌟 Recognition</div>
+    <div class="ni" onclick="pg('performance',this);renderPerformance()">📈 Performance</div>
+    <span class="ns">Add-ons</span>
+    <div class="ni" onclick="pg('holidays',this)">🏖️ Holidays <span class="nb nb-o">4</span></div>
+    <div class="ni" onclick="pg('regulations',this)">📋 Regulations</div>
+    <div class="ni" onclick="pg('courses',this)">🎓 Courses</div>
+    <span class="ns">Relationships</span>
+    <div class="ni" onclick="pg('customers',this)">🤝 Customers</div>
+    <div class="ni" onclick="pg('meetings',this)">📅 Meetings <span class="nb nb-o">3</span></div>
+    <div class="ni" onclick="pg('tasks',this)">✅ Tasks <span class="nb nb-o">5</span></div>
+    <span class="ns" id="ns-intelligence">Intelligence</span>
+    <div class="ni" id="ni-digest" onclick="pg('digest',this)">📨 Weekly digest</div>
+    <div class="ni" onclick="pg('reports',this);renderReports()">📊 Reports</div>
+    <div class="ni" onclick="pg('ai-insights',this);renderAiInsights()">✨ AI Insights</div>
+    <span class="ns">Settings</span>
+    <div class="ni" onclick="pg('teamcode',this)">🔑 Team code</div>
+    <div class="ni" onclick="pg('eap',this)">💚 EAP settings</div>
+    <div class="ni" onclick="pg('addons',this)">⚙️ Add-ons</div>
+  </div>
+
+  <div class="main">
+
+    <!-- DASHBOARD -->
+    <div class="pg on" id="pg-dash">
+      <div class="pg-title">Good morning, Sarah 👋</div>
+      <div class="pg-sub">Acme Construction Ltd · Monday 30 June 2026 · 28 employees</div>
+      <div class="mg">
+        <div class="mc"><div class="ml">Employees</div><div class="mv">28</div><div class="mc-c up">↑ 3 joined this month</div></div>
+        <div class="mc"><div class="ml">Check-ins this week</div><div class="mv">23</div><div class="mc-c up">↑ 82% rate</div></div>
+        <div class="mc"><div class="ml">Avg mood</div><div class="mv">3.9<span style="font-size:14px;color:#94a3b8">/5</span></div><div class="mc-c up">↑ up from 3.5</div></div>
+        <div class="mc"><div class="ml">Open feedback</div><div class="mv">6</div><div class="mc-c dn">↓ 2 urgent</div></div>
+        <div class="mc"><div class="ml">Pending holidays</div><div class="mv">4</div><div class="mc-c dn">awaiting approval</div></div>
+        <div class="mc"><div class="ml">Courses done</div><div class="mv">47</div><div class="mc-c up">this month</div></div>
+      </div>
+      <div class="card">
+        <div class="ct">😊 Mood breakdown this week</div>
+        <div class="mbar"><span class="mbar-l">Great</span><div class="mbar-t"><div class="mbar-f" style="width:31%;background:#16a34a"></div></div><span class="mbar-p">31%</span></div>
+        <div class="mbar"><span class="mbar-l">Good</span><div class="mbar-t"><div class="mbar-f" style="width:43%;background:#1d4ed8"></div></div><span class="mbar-p">43%</span></div>
+        <div class="mbar"><span class="mbar-l">Okay</span><div class="mbar-t"><div class="mbar-f" style="width:17%;background:#64748b"></div></div><span class="mbar-p">17%</span></div>
+        <div class="mbar"><span class="mbar-l">Low</span><div class="mbar-t"><div class="mbar-f" style="width:6%;background:#a16207"></div></div><span class="mbar-p">6%</span></div>
+        <div class="mbar"><span class="mbar-l">Struggling</span><div class="mbar-t"><div class="mbar-f" style="width:3%;background:#dc2626"></div></div><span class="mbar-p">3%</span></div>
+      </div>
+      <div class="card">
+        <div class="ct" style="justify-content:space-between">
+          <span>📈 Mood trend — last 8 weeks</span>
+          <span style="font-size:11px;font-weight:400;color:#16a34a">↑ Improving</span>
+        </div>
+        <div id="trend-chart"></div>
+        <div style="font-size:11px;color:#94a3b8;margin-top:8px">Average mood score per week, out of 5. A sustained dip is what triggers a low mood alert.</div>
+      </div>
+      <div class="card">
+        <div class="ct">⚡ Today's priorities — Action Centre</div>
+        <div id="action-centre-list"></div>
+      </div>
+    </div>
+
+    <!-- ALERTS -->
+    <div class="pg" id="pg-alerts">
+      <div class="pg-title">Alerts</div>
+      <div class="pg-sub">Issues that need your attention</div>
+      <div style="display:flex;gap:8px;margin-bottom:1rem">
+        <button class="hol-tab on" onclick="alertTab('team',this)">💚 Team</button>
+        <button class="hol-tab" onclick="alertTab('customers',this)">🤝 Customers <span class="nb nb-o" id="crm-alert-count" style="margin-left:4px"></span></button>
+      </div>
+      <div id="alert-tab-team">
+        <div class="card">
+          <div class="ri"><div class="alert-dot" style="background:#dc2626;margin-top:4px"></div><div><div class="ri-txt" style="font-weight:600">Low mood streak — 2 employees</div><div class="ri-sub" style="margin-top:3px">Two team members have checked in with low or struggling mood for 3 consecutive weeks. No names are shared. Consider sending a team wellbeing message or arranging a group check-in.</div><div class="ri-sub">Today · 08:14</div></div></div>
+          <div class="ri"><div class="alert-dot" style="background:#a16207;margin-top:4px"></div><div><div class="ri-txt" style="font-weight:600">Urgent feedback received</div><div class="ri-sub" style="margin-top:3px">An anonymous message flagged as urgent was submitted today. View it in the Feedback section.</div><div class="ri-sub">Today · 11:32</div></div></div>
+          <div class="ri"><div class="alert-dot" style="background:#7c3aed;margin-top:4px"></div><div><div class="ri-txt" style="font-weight:600">4 holiday requests pending</div><div class="ri-sub" style="margin-top:3px">Four employees have submitted holiday requests that have not been reviewed yet.</div><div class="ri-sub">Oldest request: 3 days ago</div></div></div>
+        </div>
+      </div>
+      <div id="alert-tab-customers" style="display:none">
+        <div class="card" id="crm-alert-list"></div>
+      </div>
+    </div>
+
+    <!-- FEEDBACK -->
+    <div class="pg" id="pg-feedback">
+      <div class="pg-title">Feedback</div>
+      <div class="pg-sub">Messages from your team — all anonymous unless the sender chose to be named</div>
+      <div class="card" id="responsiveness-card" style="margin-bottom:1rem"></div>
+      <input type="text" class="search-box" id="fb-search" placeholder="🔍 Search feedback messages..." oninput="renderFeedback()">
+      <div class="card" id="fb-list"></div>
+    </div>
+
+    <!-- COMPETITIONS -->
+    <div class="pg" id="pg-challenges">
+      <div class="pg-title">Competitions</div>
+      <div class="pg-sub">Create and manage team fitness challenges</div>
+      <div class="card">
+        <div class="ct">➕ Create a challenge</div>
+        <div class="field"><label>Challenge name</label><input type="text" id="ch-name" placeholder="July walking challenge"></div>
+        <div class="field"><label>Type</label><select id="ch-type"><option>Steps</option><option>Cycling km</option><option>Mindfulness minutes</option><option>Gym sessions</option></select></div>
+        <div class="field"><label>Goal per person</label><input type="number" id="ch-goal" placeholder="50000"></div>
+        <div class="field"><label>End date</label><input type="date" id="ch-date"></div>
+        <button class="btn btn-p btn-full" onclick="createChallenge()">Create and send to team</button>
+        <div class="ok" id="ch-ok">✓ Challenge created and sent to all employees</div>
+      </div>
+      <div class="card">
+        <div class="ct">🏆 June step challenge — leaderboard</div>
+        <div id="leaderboard"></div>
+      </div>
+    </div>
+
+    <!-- EMPLOYEES -->
+    <div class="pg" id="pg-employees">
+      <div class="pg-title">Employees</div>
+      <div class="pg-sub">28 members · joined via code ACME-4821</div>
+      <input type="text" class="search-box" id="emp-search" placeholder="🔍 Search by name or department..." oninput="renderEmployees()">
+      <div class="card" id="emp-list"></div>
+    </div>
+
+    <!-- EMPLOYEE PROFILE -->
+    <div class="pg" id="pg-employee-profile">
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:.75rem;cursor:pointer;color:#64748b;font-size:12px" onclick="pg('employees',document.querySelector('.ni[onclick*=employees]'))">← Back to employees</div>
+      <div id="emp-profile-body"></div>
+    </div>
+
+    <!-- TEAM WELLBEING -->
+    <div class="pg" id="pg-wellbeing">
+      <div class="pg-title">💚 Team Wellbeing</div>
+      <div class="pg-sub">Aggregated trends only — individual check-ins are never shown, by design</div>
+      <div class="mg" style="grid-template-columns:repeat(3,1fr)" id="wb-summary"></div>
+      <div class="card">
+        <div class="ct" style="justify-content:space-between"><span>📈 Mood trend — last 8 weeks</span><span style="font-size:11px;font-weight:400;color:#16a34a" id="wb-trend-lbl"></span></div>
+        <div id="wb-trend-chart"></div>
+      </div>
+      <div class="card">
+        <div class="ct">😊 Mood breakdown this week</div>
+        <div id="wb-breakdown"></div>
+      </div>
+      <div class="card">
+        <div class="ct">🗣️ Common themes in feedback</div>
+        <div style="font-size:11px;color:#94a3b8;margin-bottom:.75rem">Derived from tags on messages actually submitted this period — not inferred.</div>
+        <div id="wb-themes"></div>
+      </div>
+    </div>
+
+    <!-- 1-TO-1s -->
+    <div class="pg" id="pg-onetoones">
+      <div class="pg-title">🗣️ 1-to-1s</div>
+      <div class="pg-sub">Schedule check-ins, keep notes, turn actions into tasks</div>
+      <div style="display:flex;gap:8px;margin-bottom:1rem">
+        <button class="hol-tab on" onclick="otoTab('upcoming',this)">Upcoming</button>
+        <button class="hol-tab" onclick="otoTab('past',this)">Past</button>
+        <button class="btn btn-p" style="margin-left:auto" onclick="openOtoScheduler()">➕ Schedule 1-to-1</button>
+      </div>
+      <div id="oto-tab-upcoming"><div class="card" id="oto-list-upcoming"></div></div>
+      <div id="oto-tab-past" style="display:none"><div class="card" id="oto-list-past"></div></div>
+    </div>
+
+    <!-- 1-TO-1 DETAIL -->
+    <div class="pg" id="pg-oto-detail">
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:.75rem;cursor:pointer;color:#64748b;font-size:12px" onclick="pg('onetoones',document.querySelector('.ni[onclick*=onetoones]'))">← Back to 1-to-1s</div>
+      <div id="oto-detail-body"></div>
+    </div>
+
+    <!-- RECOGNITION -->
+    <div class="pg" id="pg-recognition">
+      <div class="pg-title">🌟 Recognition</div>
+      <div class="pg-sub">A quick, genuine thank-you — visible to the employee</div>
+      <div class="card">
+        <div class="ct">➕ Give recognition</div>
+        <div class="field"><label>Employee</label><select id="rec-employee"></select></div>
+        <div class="field"><label>Message</label><textarea class="ta" id="rec-message" placeholder="Fantastic job handling the customer meeting this week."></textarea></div>
+        <button class="btn btn-p btn-full" onclick="giveRecognition()">Send recognition</button>
+        <div class="ok" id="rec-ok">✓ Recognition sent — Alex will see this in their app</div>
+      </div>
+      <div class="card">
+        <div class="ct">Recently given</div>
+        <div id="rec-list"></div>
+      </div>
+    </div>
+
+    <!-- PERFORMANCE -->
+    <div class="pg" id="pg-performance">
+      <div class="pg-title">📈 Performance</div>
+      <div class="pg-sub">A light rollup of development activity — not a review system. Built only from real 1-to-1, recognition, and course data.</div>
+      <div class="mg" style="grid-template-columns:repeat(3,1fr)" id="perf-summary"></div>
+      <div class="card">
+        <div class="ct">By employee</div>
+        <div style="font-size:11px;color:#94a3b8;margin-bottom:.75rem">1-to-1 actions and recognition are tracked per person. Course completion is currently company-wide only — per-employee tracking needs live course_completions data (see LAUNCH_CHECKLIST.md).</div>
+        <div id="perf-table"></div>
+      </div>
+    </div>
+
+    <!-- 1-TO-1 SCHEDULER MODAL -->
+    <div id="oto-scheduler-overlay" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,.45);z-index:200;align-items:center;justify-content:center" onclick="if(event.target===this)closeOtoScheduler()">
+      <div style="background:white;border-radius:14px;padding:1.5rem;width:400px;max-width:90vw;max-height:85vh;overflow-y:auto">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem">
+          <div style="font-size:15px;font-weight:600">Schedule a 1-to-1</div>
+          <div style="cursor:pointer;color:#94a3b8;font-size:18px" onclick="closeOtoScheduler()">×</div>
+        </div>
+        <div class="field"><label>Employee</label><select id="oto-sched-employee"></select></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <div class="field"><label>Date</label><input type="date" id="oto-sched-date"></div>
+          <div class="field"><label>Time</label><input type="time" id="oto-sched-time"></div>
+        </div>
+        <button class="btn btn-g btn-full" onclick="saveOto()">Schedule 1-to-1</button>
+      </div>
+    </div>
+
+    <!-- HOLIDAYS -->
+    <div class="pg" id="pg-holidays">
+      <div class="pg-title">🏖️ Holiday Planner</div>
+      <div class="pg-sub">Approve or deny requests · view team calendars by department</div>
+
+      <!-- TABS -->
+      <div style="display:flex;gap:8px;margin-bottom:1rem">
+        <button class="hol-tab on" onclick="holTab('requests',this)">📋 Requests</button>
+        <button class="hol-tab" onclick="holTab('calendar',this)">📅 Calendar</button>
+        <button class="hol-tab" onclick="holTab('allowance',this)">📊 Allowance</button>
+      </div>
+
+      <!-- REQUESTS TAB -->
+      <div id="hol-tab-requests">
+        <div class="card" id="hol-list"></div>
+      </div>
+
+      <!-- ALLOWANCE TAB -->
+      <div id="hol-tab-allowance" style="display:none">
+        <div class="card">
+          <div class="ct">📊 Annual leave allowance — 2026</div>
+          <div style="font-size:12px;color:#64748b;margin-bottom:1rem">Every employee can have their own allowance — useful for part-time staff, contract differences, or extra days negotiated individually. Edit the number of days and click Save.</div>
+          <div id="allowance-list"></div>
+          <div class="ok" id="allow-saved-msg">✓ Allowance updated</div>
+        </div>
+        <div class="card">
+          <div class="ct">⚙️ Default allowance for new employees</div>
+          <div style="font-size:12px;color:#64748b;margin-bottom:.75rem">New employees who join with your team code will start with this many days, which you can then adjust individually above.</div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <input type="number" min="0" max="365" id="default-allow-input" value="28" style="width:80px;padding:8px 11px;border:1px solid #e2e8f0;border-radius:7px;font-size:13px">
+            <span style="font-size:12px;color:#64748b">days per year</span>
+            <button class="btn btn-o" onclick="saveDefaultAllowance()">Save default</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- CALENDAR TAB -->
+      <div id="hol-tab-calendar" style="display:none">
+        <div class="card">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem">
+            <div style="font-size:13px;font-weight:600" id="mgr-cal-title"></div>
+            <div style="display:flex;gap:6px">
+              <button class="btn btn-o" style="padding:5px 10px;font-size:12px" onclick="mgrCalNav(-1)">← Prev</button>
+              <button class="btn btn-o" style="padding:5px 10px;font-size:12px" onclick="mgrCalNav(1)">Next →</button>
+            </div>
+          </div>
+          <!-- DEPARTMENT FILTER -->
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:1rem" id="dept-filters"></div>
+          <!-- CALENDAR GRID -->
+          <div id="mgr-cal-grid"></div>
+          <!-- LEGEND -->
+          <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:1rem" id="mgr-cal-legend"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- REGULATIONS -->
+    <div class="pg" id="pg-regulations">
+      <div class="pg-title">📋 Regulations</div>
+      <div class="pg-sub">Company policies uploaded for your employees to read</div>
+      <div class="card">
+        <div class="ct">➕ Upload a policy</div>
+        <div class="field"><label>Title</label><input type="text" id="reg-title" placeholder="Health and Safety Policy"></div>
+        <div class="field"><label>Content</label><textarea class="ta" id="reg-body" placeholder="Paste or type the full policy text here..."></textarea></div>
+        <button class="btn btn-p btn-full" onclick="addReg()">Upload policy</button>
+        <div class="ok" id="reg-ok">✓ Policy uploaded — employees can now read it</div>
+      </div>
+      <div class="card" id="reg-list"></div>
+    </div>
+
+    <!-- COURSES -->
+    <div class="pg" id="pg-courses">
+      <div class="pg-title">🎓 Courses</div>
+      <div class="pg-sub">Training courses available to your team</div>
+      <div class="card">
+        <div class="ct">➕ Add a course</div>
+        <div class="field"><label>Title</label><input type="text" id="co-title" placeholder="First Aid Basics"></div>
+        <div class="field"><label>Category</label><select id="co-cat"><option value="health">Health and Safety</option><option value="posture">Posture</option><option value="fire">Fire Safety</option><option value="mental">Mental Health</option><option value="wellbeing">Wellbeing</option><option value="general">General</option></select></div>
+        <div class="field"><label>Course content</label><textarea class="ta" id="co-body" placeholder="Write the course content here..."></textarea></div>
+        <button class="btn btn-p btn-full" onclick="addCourse()">Add course</button>
+        <div class="ok" id="co-ok">✓ Course added — employees can now complete it</div>
+      </div>
+      <div class="card" id="co-list"></div>
+    </div>
+
+    <!-- TEAM CODE -->
+    <div class="pg" id="pg-teamcode">
+      <div class="pg-title">Team code</div>
+      <div class="pg-sub">Share this code with employees so they can join on Superb Employee</div>
+      <div class="codebox">
+        <div style="font-size:12px;color:#94a3b8">Your company join code</div>
+        <div class="codeval">ACME-4821</div>
+        <div style="font-size:12px;color:#94a3b8;margin-bottom:12px">28 employees joined · valid until 31 Dec 2026</div>
+        <div style="display:flex;gap:8px;justify-content:center">
+          <button class="btn btn-o" onclick="alert('Code copied: ACME-4821')">Copy code</button>
+          <button class="btn btn-o" onclick="alert('In the live app this generates a new code')">Generate new code</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="ct">How it works</div>
+        <div class="ri"><span style="font-weight:600;color:#7c3aed;width:18px;flex-shrink:0">1</span><span class="ri-txt">Share the code with employees via email, Slack, or any channel you use</span></div>
+        <div class="ri"><span style="font-weight:600;color:#7c3aed;width:18px;flex-shrink:0">2</span><span class="ri-txt">They open Superb Employee on web or mobile and enter the code to join your workspace</span></div>
+        <div class="ri"><span style="font-weight:600;color:#7c3aed;width:18px;flex-shrink:0">3</span><span class="ri-txt">Their weekly check-ins, feedback, and activity appear in your dashboard — always anonymised</span></div>
+      </div>
+    </div>
+
+    <!-- EAP -->
+    <div class="pg" id="pg-eap">
+      <div class="pg-title">💚 EAP Settings</div>
+      <div class="pg-sub">Your Employee Assistance Programme details — shown to all employees in their app</div>
+      <div class="card">
+        <div class="ct">Current EAP</div>
+        <div class="eap-info"><b>Health Assured</b><br>📞 0800 030 5182<br>🌐 healthassured.org<br><br>Free, confidential support available 24 hours a day, 7 days a week for all employees and their immediate family members. Covers mental health, legal, financial, and personal issues.</div>
+      </div>
+      <div class="card">
+        <div class="ct">Edit EAP details</div>
+        <div class="field"><label>Provider name</label><input type="text" value="Health Assured"></div>
+        <div class="field"><label>Phone number</label><input type="text" value="0800 030 5182"></div>
+        <div class="field"><label>Website</label><input type="text" value="healthassured.org"></div>
+        <div class="field"><label>Description shown to employees</label><textarea class="ta">Free, confidential support available 24 hours a day, 7 days a week for all employees and their immediate family members. Covers mental health, legal, financial, and personal issues.</textarea></div>
+        <button class="btn btn-p btn-full" onclick="showOk('eap-ok')">Save EAP settings</button>
+        <div class="ok" id="eap-ok">✓ EAP settings saved — employees will see the updated details</div>
+      </div>
+    </div>
+
+    <!-- ADD-ONS -->
+    <div class="pg" id="pg-addons">
+      <div class="pg-title">Add-ons</div>
+      <div class="pg-sub">All add-ons are currently enabled on this demo workspace</div>
+      <div id="addon-cards"></div>
+    </div>
+
+    <!-- CUSTOMERS LIST -->
+    <div class="pg" id="pg-customers">
+      <div class="pg-title">🤝 Customers</div>
+      <div class="pg-sub">Relationships your reps are managing on your behalf</div>
+      <div class="mg" style="grid-template-columns:repeat(4,1fr)">
+        <div class="mc"><div class="ml">Total customers</div><div class="mv" id="cust-total">–</div></div>
+        <div class="mc"><div class="ml">Needs attention</div><div class="mv" style="color:#a16207" id="cust-attention">–</div></div>
+        <div class="mc"><div class="ml">At risk</div><div class="mv" style="color:#dc2626" id="cust-risk">–</div></div>
+        <div class="mc"><div class="ml">Open opportunities</div><div class="mv" style="color:#1d4ed8" id="cust-opps">–</div></div>
+      </div>
+      <input type="text" class="search-box" id="cust-search" placeholder="🔍 Search customers or reps..." oninput="renderCustomers()">
+      <div class="card" id="cust-list"></div>
+    </div>
+
+    <!-- CUSTOMER PROFILE (single reusable detail page) -->
+    <div class="pg" id="pg-customer-detail">
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:.75rem;cursor:pointer;color:#64748b;font-size:12px" onclick="pg('customers',document.querySelector('.ni[onclick*=customers]'))">← Back to customers</div>
+      <div id="cust-detail-body"></div>
+    </div>
+
+    <!-- TASKS -->
+    <div class="pg" id="pg-tasks">
+      <div class="pg-title">✅ Tasks</div>
+      <div class="pg-sub">Follow-ups and action items across all customer relationships</div>
+      <div style="display:flex;gap:8px;margin-bottom:1rem">
+        <button class="hol-tab on" onclick="taskTab('open',this)">Open</button>
+        <button class="hol-tab" onclick="taskTab('done',this)">Completed</button>
+      </div>
+      <div id="task-tab-open"><div class="card" id="task-list-open"></div></div>
+      <div id="task-tab-done" style="display:none"><div class="card" id="task-list-done"></div></div>
+    </div>
+
+    <!-- MEETINGS -->
+    <div class="pg" id="pg-meetings">
+      <div class="pg-title">📅 Meetings</div>
+      <div class="pg-sub">Customer meetings scheduled or completed by your reps</div>
+      <div style="display:flex;gap:8px;margin-bottom:1rem">
+        <button class="hol-tab on" onclick="meetTab('upcoming',this)">Upcoming</button>
+        <button class="hol-tab" onclick="meetTab('past',this)">Past</button>
+        <button class="btn btn-p" style="margin-left:auto" onclick="openScheduler(null)">➕ Schedule meeting</button>
+      </div>
+      <div id="meet-tab-upcoming"><div class="card" id="meet-list-upcoming"></div></div>
+      <div id="meet-tab-past" style="display:none"><div class="card" id="meet-list-past"></div></div>
+    </div>
+
+    <!-- MEETING DETAIL -->
+    <div class="pg" id="pg-meeting-detail">
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:.75rem;cursor:pointer;color:#64748b;font-size:12px" onclick="pg('meetings',document.querySelector('.ni[onclick*=meetings]'))">← Back to meetings</div>
+      <div id="meet-detail-body"></div>
+    </div>
+
+    <!-- SCHEDULE MEETING MODAL -->
+    <!-- WEEKLY DIGEST -->
+    <div class="pg" id="pg-digest">
+      <div class="pg-title">📨 Weekly digest</div>
+      <div class="pg-sub">One email combining team wellbeing and customer relationships — sent automatically every Monday morning</div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:1rem">
+        <button class="btn btn-o" onclick="alert('In the live app this sends a preview to your email address right now.')">✉️ Send preview to my email</button>
+        <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:#64748b;cursor:pointer">
+          <input type="checkbox" id="digest-toggle" checked style="width:14px;height:14px"> Email me this every Monday at 8am
+        </label>
+      </div>
+      <div id="digest-preview"></div>
+    </div>
+
+    <!-- REPORTS -->
+    <div class="pg" id="pg-reports">
+      <div class="pg-title">📊 Reports</div>
+      <div class="pg-sub">Built only from real data — anything that needs a real timestamp to filter by shows a plain note in demo mode rather than a misleading number</div>
+      <div style="display:flex;gap:8px;margin-bottom:1rem">
+        <button class="hol-tab on" data-range="7" onclick="setReportRange(7,this)">Last 7 days</button>
+        <button class="hol-tab" data-range="30" onclick="setReportRange(30,this)">Last 30 days</button>
+        <button class="hol-tab" data-range="90" onclick="setReportRange(90,this)">Last 90 days</button>
+      </div>
+      <div id="report-demo-note" style="display:none;font-size:11px;color:#a16207;background:#fef9c3;border:1px solid #fde68a;border-radius:8px;padding:8px 12px;margin-bottom:1rem">ℹ️ Demo data has no real timestamps to filter by — these figures are all-time, not scoped to the selected range. Date filtering works correctly once live.</div>
+      <div class="card">
+        <div class="ct">💚 Team</div>
+        <div id="report-team"></div>
+      </div>
+      <div class="card">
+        <div class="ct">✅ Work</div>
+        <div id="report-work"></div>
+      </div>
+      <div class="card">
+        <div class="ct">🤝 Customer relationships</div>
+        <div id="report-crm"></div>
+      </div>
+    </div>
+
+    <!-- AI INSIGHTS -->
+    <div class="pg" id="pg-ai-insights">
+      <div class="pg-title">✨ AI Insights</div>
+      <div class="pg-sub">AI helps interpret data that already exists — it never invents a number or diagnoses anyone</div>
+      <div id="ai-insights-list"></div>
+    </div>
+
+    <div id="scheduler-overlay" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,.45);z-index:200;align-items:center;justify-content:center" onclick="if(event.target===this)closeScheduler()">
+      <div style="background:white;border-radius:14px;padding:1.5rem;width:400px;max-width:90vw;max-height:85vh;overflow-y:auto">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem">
+          <div style="font-size:15px;font-weight:600">Schedule a meeting</div>
+          <div style="cursor:pointer;color:#94a3b8;font-size:18px" onclick="closeScheduler()">×</div>
+        </div>
+        <div class="field"><label>Customer</label>
+          <select id="sched-customer"></select>
+        </div>
+        <div class="field"><label>Meeting type</label>
+          <select id="sched-purpose">
+            <option>Customer review</option>
+            <option>Sales meeting</option>
+            <option>Product/service discussion</option>
+            <option>Support meeting</option>
+            <option>Renewal meeting</option>
+            <option>Check-in</option>
+          </select>
+        </div>
+        <div class="field"><label>Format</label>
+          <select id="sched-format">
+            <option value="video">📹 Video call</option>
+            <option value="inperson">🤝 In person</option>
+          </select>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <div class="field"><label>Date</label><input type="date" id="sched-date"></div>
+          <div class="field"><label>Time</label><input type="time" id="sched-time"></div>
+        </div>
+        <div class="field"><label>Rep</label>
+          <select id="sched-rep">
+            <option>Jamie T.</option><option>Sarah M.</option><option>Marcus K.</option><option>Robin P.</option>
+          </select>
+        </div>
+        <div class="field"><label>Customer contact email <span style="font-weight:400;color:#94a3b8">— for the join link</span></label>
+          <input type="email" id="sched-cust-email" placeholder="david@lochindustries.co.uk">
+        </div>
+        <div class="field"><label>Presentation <span style="font-weight:400;color:#94a3b8">— optional, .pptx</span></label>
+          <input type="file" id="sched-deck" accept=".pptx,.ppt">
+        </div>
+        <div class="field"><label>Note for the rep before this meeting <span style="font-weight:400;color:#94a3b8">— optional</span></label>
+          <textarea id="sched-manager-note" placeholder="e.g. Make sure to mention the renewal pricing before they ask"></textarea>
+        </div>
+        <button class="btn btn-g btn-full" onclick="saveScheduledMeeting()">Schedule meeting</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ============================================================
+// SUPERB_CONFIG — THE ONLY BLOCK YOU EDIT TO GO LIVE
+// ============================================================
+// Everything below reads from `employees`, `holidays`, `feedbackData`
+// etc as in-memory arrays when DEMO_MODE is true (exactly how this
+// file has always worked — nothing changes for you today).
+//
+// TO LAUNCH:
+//   1. Set DEMO_MODE to false
+//   2. Fill in SUPABASE_URL and SUPABASE_ANON_KEY (see index.html /
+//      database-setup.sql for how to get these)
+//   3. That's it. Every DB.* function below already knows how to
+//      read/write Supabase instead — the render functions never
+//      change, because they only ever call DB.*, never the arrays
+//      directly. If a render function is still touching a raw array
+//      instead of DB.*, that's a bug — flag it, don't route around it.
+// ============================================================
+var SUPERB_CONFIG = {
+  DEMO_MODE: true,
+  SUPABASE_URL: "YOUR_SUPABASE_URL",
+  SUPABASE_ANON_KEY: "YOUR_SUPABASE_ANON_KEY"
+};
+
+var sb = null;
+if (!SUPERB_CONFIG.DEMO_MODE) {
+  if (SUPERB_CONFIG.SUPABASE_URL === "YOUR_SUPABASE_URL") {
+    console.error("SUPERB_CONFIG.DEMO_MODE is false but Supabase credentials were never filled in. Falling back to demo data so the app doesn't hard-crash — fix SUPERB_CONFIG before launch.");
+    SUPERB_CONFIG.DEMO_MODE = true;
+  } else {
+    sb = window.supabase.createClient(SUPERB_CONFIG.SUPABASE_URL, SUPERB_CONFIG.SUPABASE_ANON_KEY);
+  }
+}
+
+// ------------------------------------------------------------
+// Session — which company is this manager looking at?
+// In demo mode this is fixed. In live mode it comes from the
+// company record created at sign-up on portal.html / index.html,
+// exactly the same way index.html's enterApp() resolves it.
+// ------------------------------------------------------------
+var SESSION = {
+  companyId: null,
+  companyName: 'Acme Construction Ltd',
+  managerEmail: null,
+  managerName: 'Sarah'
+};
+
+async function resolveSession() {
+  if (SUPERB_CONFIG.DEMO_MODE) return true; // keep existing demo header text
+  var savedId = localStorage.getItem('superb_company_id');
+  if (!savedId) {
+    // No signed-in manager found — send them back to sign in rather
+    // than silently showing another company's data or an empty shell.
+    window.location.href = 'portal.html';
+    return false;
+  }
+  var { data, error } = await sb.from('companies').select('*').eq('id', savedId).single();
+  if (error || !data) {
+    window.location.href = 'portal.html';
+    return false;
+  }
+  SESSION.companyId = data.id;
+  SESSION.companyName = data.name;
+  SESSION.managerEmail = data.manager_email;
+  SESSION.managerName = data.manager_name;
+  return true;
+}
+
+// ------------------------------------------------------------
+// DB — every data operation the manager app performs, in one
+// place. Render/UI code calls these, never the raw arrays.
+// Demo mode mutates the in-memory arrays declared below (so
+// today's behaviour is byte-for-byte identical). Live mode
+// talks to Supabase, scoped to SESSION.companyId.
+//
+// This is intentionally NOT abstracted further (no generic
+// "table(name).op()" helper) — explicit per-entity functions
+// are easier to audit against database-setup.sql and harder to
+// get subtly wrong on a launch day.
+// ------------------------------------------------------------
+var DB = {
+
+  employees: {
+    list: async function() {
+      if (SUPERB_CONFIG.DEMO_MODE) return employees;
+      var { data } = await sb.from('employees').select('*').eq('company_id', SESSION.companyId);
+      return data || [];
+    }
+  },
+
+  holidays: {
+    list: async function() {
+      if (SUPERB_CONFIG.DEMO_MODE) return holidays;
+      var { data } = await sb.from('holiday_requests').select('*').eq('company_id', SESSION.companyId).order('created_at', {ascending:false});
+      return data || [];
+    },
+    approve: async function(idOrIndex) {
+      if (SUPERB_CONFIG.DEMO_MODE) { holidays[idOrIndex].status = 'approved'; return; }
+      await sb.from('holiday_requests').update({status:'approved'}).eq('id', idOrIndex);
+    },
+    deny: async function(idOrIndex) {
+      if (SUPERB_CONFIG.DEMO_MODE) { holidays[idOrIndex].status = 'denied'; return; }
+      await sb.from('holiday_requests').update({status:'denied'}).eq('id', idOrIndex);
+    }
+  },
+
+  feedback: {
+    list: async function() {
+      if (SUPERB_CONFIG.DEMO_MODE) return feedbackData;
+      var { data } = await sb.from('feedback').select('*').eq('company_id', SESSION.companyId).order('created_at', {ascending:false});
+      return data || [];
+    },
+    reply: async function(id, replyText) {
+      if (SUPERB_CONFIG.DEMO_MODE) {
+        var item = feedbackData.find(function(f){ return f.id === id; });
+        if (item) item.reply = replyText;
+        return;
+      }
+      await sb.from('feedback').update({manager_reply: replyText, replied_at: new Date().toISOString()}).eq('id', id);
+    }
+  },
+
+  oneToOnes: {
+    // Normalizes both modes to the same shape the UI already expects:
+    // {id, employeeId, employee, date, time, status, notes, actions:[{id,text,done,taskId}]}
+    list: async function() {
+      if (SUPERB_CONFIG.DEMO_MODE) return oneToOnes;
+      var { data } = await sb.from('one_to_ones').select('*, one_to_one_actions(*), employees(display_name)').eq('company_id', SESSION.companyId).order('scheduled_at', {ascending:true});
+      return (data||[]).map(function(o){
+        var d = new Date(o.scheduled_at);
+        return {
+          id:o.id, employeeId:o.employee_id, employee:o.employees?o.employees.display_name:'',
+          date: d.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}), time: d.toTimeString().slice(0,5),
+          status:o.status, notes:o.notes||'',
+          actions:(o.one_to_one_actions||[]).map(function(a){return {id:a.id, text:a.text, done:a.done, taskId:a.crm_task_id};})
+        };
+      });
+    },
+    // dateStr: 'YYYY-MM-DD' (from a <input type=date>), time: 'HH:MM'.
+    // Previously this took a pre-formatted display string and inserted
+    // it directly as scheduled_at in live mode — Postgres would have
+    // rejected or mis-parsed "27 Jun 2026". Fixed: build the real ISO
+    // timestamp here, once, so callers never have to think about it.
+    create: async function(employeeId, dateStr, time) {
+      var displayDate = new Date(dateStr).toLocaleDateString('en-GB', {day:'numeric', month:'short', year:'numeric'});
+      if (SUPERB_CONFIG.DEMO_MODE) {
+        var newId = (oneToOnes.length ? Math.max.apply(null, oneToOnes.map(function(o){return o.id;})) : 0) + 1;
+        var emp = getEmployeeById(employeeId);
+        var record = {id:newId, employeeId:employeeId, employee: emp ? emp.name : employeeId, date:displayDate, time:time, status:'upcoming', notes:'', actions:[]};
+        oneToOnes.push(record);
+        return record;
+      }
+      var scheduledAt = new Date(dateStr+'T'+time+':00').toISOString();
+      var { data } = await sb.from('one_to_ones').insert([{company_id:SESSION.companyId, employee_id:employeeId, manager_email:SESSION.managerEmail, scheduled_at:scheduledAt, status:'upcoming'}]).select().single();
+      return data;
+    },
+    saveNotes: async function(id, notes) {
+      if (SUPERB_CONFIG.DEMO_MODE) {
+        var o = oneToOnes.find(function(x){return String(x.id)===String(id);});
+        if (o) { o.notes = notes; o.status = 'completed'; }
+        return;
+      }
+      await sb.from('one_to_ones').update({notes:notes, status:'completed'}).eq('id', id);
+    },
+    addAction: async function(oneToOneId, text) {
+      if (SUPERB_CONFIG.DEMO_MODE) {
+        var o = oneToOnes.find(function(x){return String(x.id)===String(oneToOneId);});
+        if (o) o.actions.push({text:text, done:false, taskId:null});
+        return;
+      }
+      await sb.from('one_to_one_actions').insert([{one_to_one_id:oneToOneId, text:text}]);
+    },
+    toggleAction: async function(oneToOneId, actionIndex, actionId, done) {
+      if (SUPERB_CONFIG.DEMO_MODE) {
+        var o = oneToOnes.find(function(x){return String(x.id)===String(oneToOneId);});
+        if (o) o.actions[actionIndex].done = done;
+        return;
+      }
+      await sb.from('one_to_one_actions').update({done:done}).eq('id', actionId);
+    },
+    linkActionToTask: async function(actionId, taskId) {
+      if (SUPERB_CONFIG.DEMO_MODE) return; // demo actions have no persisted row to link
+      await sb.from('one_to_one_actions').update({crm_task_id:taskId}).eq('id', actionId);
+    }
+  },
+
+  recognition: {
+    list: async function() {
+      if (SUPERB_CONFIG.DEMO_MODE) return recognitions;
+      var { data } = await sb.from('recognitions').select('*').eq('company_id', SESSION.companyId).order('created_at', {ascending:false});
+      return data || [];
+    },
+    give: async function(employeeId, message) {
+      if (SUPERB_CONFIG.DEMO_MODE) {
+        var newId = (recognitions.length ? Math.max.apply(null, recognitions.map(function(r){return r.id;})) : 0) + 1;
+        var emp = getEmployeeById(employeeId);
+        var record = {id:newId, employeeId:employeeId, employee: emp ? emp.name : employeeId, message:message, date:'Just now'};
+        recognitions.push(record);
+        return record;
+      }
+      var { data } = await sb.from('recognitions').insert([{company_id:SESSION.companyId, employee_id:employeeId, manager_email:SESSION.managerEmail, message:message}]).select().single();
+      return data;
+    }
+  },
+
+  wellbeing: {
+    // Returns ONLY counts, never a list of employees with their mood
+    // attached. In demo mode this collapses employees[].mood into
+    // counts client-side (fine — it's fake data, not real check-ins).
+    // In live mode this calls a Postgres function (see
+    // database-setup.sql: get_mood_aggregate) so individual mood rows
+    // never leave the database, let alone reach the browser — the
+    // anonymity guarantee has to hold at the query level, not just in
+    // what the UI chooses to render.
+    aggregate: async function() {
+      if (SUPERB_CONFIG.DEMO_MODE) {
+        var counts = {Great:0,Good:0,Okay:0,Low:0,Struggling:0};
+        employees.forEach(function(e){ counts[e.mood] = (counts[e.mood]||0)+1; });
+        return counts;
+      }
+      var { data } = await sb.rpc('get_mood_aggregate', { p_company_id: SESSION.companyId });
+      var counts = {Great:0,Good:0,Okay:0,Low:0,Struggling:0};
+      (data||[]).forEach(function(row){ counts[row.mood_band] = row.employee_count; });
+      return counts;
+    },
+    // Weekly average, aggregate only — closes the Phase 4 placeholder
+    // gap. Demo mode keeps the existing illustrative 8-week array;
+    // live mode calls get_mood_trend, which only ever returns weekly
+    // averages, never a row per employee.
+    trend: async function(weeks) {
+      if (SUPERB_CONFIG.DEMO_MODE) return trendData;
+      var { data } = await sb.rpc('get_mood_trend', { p_company_id: SESSION.companyId, p_weeks: weeks||8 });
+      return (data||[]).map(function(row){
+        return { week: new Date(row.week_start).toLocaleDateString('en-GB',{day:'numeric',month:'short'}), score: parseFloat(row.avg_mood), responses: row.response_count };
+      });
+    }
+  },
+
+  allowance: {
+    // `used` is always computed from real approved holiday_requests —
+    // never stored as its own number — so it can't drift out of sync
+    // with the requests a manager actually approved.
+    list: async function() {
+      if (SUPERB_CONFIG.DEMO_MODE) {
+        return allowanceData.map(function(a){
+          var used = holidays.filter(function(h){return h.name===a.name && h.status==='approved';})
+            .reduce(function(sum,h){return sum+h.days;}, 0);
+          return {id:a.id, name:a.name, total:a.total, used:used};
+        });
+      }
+      var { data: emps } = await sb.from('employees').select('id, display_name, total_allowance').eq('company_id', SESSION.companyId);
+      var { data: approved } = await sb.from('holiday_requests').select('employee_id, days_count').eq('company_id', SESSION.companyId).eq('status','approved');
+      return (emps||[]).map(function(e){
+        var used = (approved||[]).filter(function(h){return h.employee_id===e.id;}).reduce(function(s,h){return s+h.days_count;},0);
+        return {id:e.id, name:e.display_name, total:e.total_allowance, used:used};
+      });
+    },
+    setTotal: async function(id, newTotal) {
+      if (SUPERB_CONFIG.DEMO_MODE) {
+        var a = allowanceData.find(function(x){return x.id===id;});
+        if (a) a.total = newTotal;
+        return;
+      }
+      await sb.from('employees').update({total_allowance:newTotal}).eq('id', id);
+    },
+    setDefault: async function(newDefault) {
+      if (SUPERB_CONFIG.DEMO_MODE) { DEFAULT_ALLOWANCE = newDefault; return; }
+      await sb.from('companies').update({default_allowance:newDefault}).eq('id', SESSION.companyId);
+    }
+  },
+
+  regulations: {
+    list: async function() {
+      if (SUPERB_CONFIG.DEMO_MODE) return regs;
+      var { data } = await sb.from('regulations').select('*').eq('company_id', SESSION.companyId).order('created_at', {ascending:false});
+      return data || [];
+    },
+    add: async function(title, content) {
+      if (SUPERB_CONFIG.DEMO_MODE) { regs.unshift({title:title, preview:content.substring(0,120)+'...'}); return; }
+      await sb.from('regulations').insert([{company_id:SESSION.companyId, title:title, content:content}]);
+    }
+  },
+
+  courses: {
+    // Live mode asks Supabase for the completion count alongside each
+    // course in one query (embedded count) rather than looping and
+    // firing one query per course.
+    list: async function() {
+      if (SUPERB_CONFIG.DEMO_MODE) return courses;
+      var { data } = await sb.from('courses').select('*, course_completions(count)').eq('company_id', SESSION.companyId).order('created_at', {ascending:false});
+      return (data||[]).map(function(c){
+        return {icon:'📖', title:c.title, cat:c.category, completions: (c.course_completions && c.course_completions[0]) ? c.course_completions[0].count : 0, id:c.id};
+      });
+    },
+    add: async function(icon, title, cat, content) {
+      if (SUPERB_CONFIG.DEMO_MODE) { courses.unshift({icon:icon, title:title, cat:cat, completions:0}); return; }
+      await sb.from('courses').insert([{company_id:SESSION.companyId, title:title, category:cat, content:content}]);
+    }
+  }
+
+  ,
+
+  // ============================================
+  // CRM — customers, tasks, meetings. Health
+  // score stays computed client-side by
+  // getCustomerHealth() in both modes (not a
+  // privacy concern like mood — just correctly
+  // "derived, never stored" so it can't go stale).
+  // Opportunities are wired in employee.html,
+  // where the pipeline UI actually lives; manager
+  // visibility into opportunities is a real gap,
+  // tracked in LAUNCH_CHECKLIST.md.
+  // ============================================
+  customers: {
+    list: async function() {
+      if (SUPERB_CONFIG.DEMO_MODE) return customers;
+      var { data } = await sb.from('customers').select('*, employees(display_name)').eq('company_id', SESSION.companyId);
+      return (data||[]).map(function(c){
+        return {
+          id: c.id, name: c.name, sector: c.sector, location: c.location,
+          rep: c.employees ? c.employees.display_name : null,
+          mrr: c.mrr, since: c.customer_since ? new Date(c.customer_since).toLocaleDateString('en-GB',{month:'short',year:'numeric'}) : '',
+          lastContact: c.last_contact_at ? daysAgoLabel(c.last_contact_at) : 'No contact recorded',
+          summary: c.ai_summary || '', createdAt: c.created_at
+        };
+      });
+    },
+    notes: async function(customerId) {
+      if (SUPERB_CONFIG.DEMO_MODE) return custNotes[customerId] || [];
+      var { data } = await sb.from('customer_notes').select('*').eq('customer_id', customerId).order('created_at',{ascending:false});
+      return (data||[]).map(function(n){ return {text:n.text, author:'Note', date:new Date(n.created_at).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})}; });
+    },
+    // Timeline is assembled from notes + meetings + completed tasks at
+    // query time — there is no separate timeline table to write to
+    // twice and have disagree with the data that actually happened.
+    timeline: async function(customerId) {
+      if (SUPERB_CONFIG.DEMO_MODE) return custTimeline[customerId] || [];
+      var notesR = await sb.from('customer_notes').select('*').eq('customer_id', customerId);
+      var meetsR = await sb.from('meetings').select('*').eq('customer_id', customerId);
+      var tasksR = await sb.from('tasks').select('*').eq('customer_id', customerId).eq('done', true);
+      var events = [];
+      (notesR.data||[]).forEach(function(n){ events.push({type:'note', text:'Note added — '+n.text.substring(0,40)+(n.text.length>40?'…':''), sub:new Date(n.created_at).toLocaleDateString('en-GB'), ts:n.created_at}); });
+      (meetsR.data||[]).forEach(function(m){ events.push({type:'meeting', text:'Meeting — '+(m.purpose||''), sub:new Date(m.scheduled_at).toLocaleDateString('en-GB')+' · '+m.status, ts:m.scheduled_at}); });
+      (tasksR.data||[]).forEach(function(t){ events.push({type:'task', text:'Task completed — '+t.text, sub:'', ts:t.created_at}); });
+      events.sort(function(a,b){ return new Date(b.ts)-new Date(a.ts); });
+      return events;
+    },
+    addNote: async function(customerId, text) {
+      if (SUPERB_CONFIG.DEMO_MODE) {
+        if(!custNotes[customerId]) custNotes[customerId]=[];
+        custNotes[customerId].unshift({text:text, author:'You', date:'Today'});
+        if(!custTimeline[customerId]) custTimeline[customerId]=[];
+        custTimeline[customerId].unshift({type:'note', text:'Note added — '+text.substring(0,40)+(text.length>40?'…':''), sub:'Today · You'});
+        return;
+      }
+      await sb.from('customer_notes').insert([{customer_id:customerId, text:text}]);
+    }
+  },
+
+  tasks: {
+    list: async function() {
+      if (SUPERB_CONFIG.DEMO_MODE) return tasks;
+      var { data } = await sb.from('tasks').select('*, customers(name), employees(display_name)').eq('company_id', SESSION.companyId);
+      return (data||[]).map(function(t){
+        return {id:t.id, custId:t.customer_id, custName:t.customers?t.customers.name:'Internal', text:t.text, rep:t.employees?t.employees.display_name:'', due:t.due_date?new Date(t.due_date).toLocaleDateString('en-GB',{day:'numeric',month:'short'}):'', dueDate:t.due_date, urgent:t.urgent, done:t.done, createdAt:t.created_at};
+      });
+    },
+    complete: async function(id) {
+      if (SUPERB_CONFIG.DEMO_MODE) { var t=tasks.find(function(x){return x.id===id;}); if(t) t.done=true; return; }
+      await sb.from('tasks').update({done:true}).eq('id', id);
+    },
+    // fields: {customerId, custName, repName, repEmployeeId, text, due, urgent, source}
+    create: async function(fields) {
+      if (SUPERB_CONFIG.DEMO_MODE) {
+        var newId = (tasks.length?Math.max.apply(null,tasks.map(function(t){return t.id;})):0)+1;
+        var rec = {id:newId, custId:fields.customerId||null, custName:fields.custName||'Internal', text:fields.text, rep:fields.repName, due:fields.due||'This week', urgent:!!fields.urgent, done:false};
+        tasks.push(rec);
+        return rec;
+      }
+      var { data } = await sb.from('tasks').insert([{company_id:SESSION.companyId, customer_id:fields.customerId||null, rep_employee_id:fields.repEmployeeId, text:fields.text, due_date:fields.dueDate||null, urgent:!!fields.urgent, source:fields.source||'Manual'}]).select().single();
+      return data;
+    }
+  },
+
+  meetings: {
+    list: async function() {
+      if (SUPERB_CONFIG.DEMO_MODE) return meetings;
+      var { data } = await sb.from('meetings').select('*, customers(name), employees(display_name)').eq('company_id', SESSION.companyId);
+      return (data||[]).map(function(m){
+        var d = new Date(m.scheduled_at);
+        return {id:m.id, custId:m.customer_id, custName:m.customers?m.customers.name:'', rep:m.employees?m.employees.display_name:'', purpose:m.purpose, format:m.format, date:d.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}), time:d.toTimeString().slice(0,5), status:m.status, notes:m.notes, sentiment:m.sentiment, custEmail:m.customer_email, deckName:null, managerNote:m.manager_note, joinLink:m.meeting_link, scheduledAt:m.scheduled_at};
+      });
+    }
+    // Scheduling new meetings, live transcription, and AI-summary
+    // approval remain local-array-only for now — see LAUNCH_CHECKLIST.md.
+    // Reading real data first, wiring every write path second, so the
+    // parts that are done are genuinely done rather than half-wired.
+  }
+};
+
+// NOTE: `mood` stays on this demo record only because it's the
+// stand-in for a server-side aggregate query (see DB.wellbeing.aggregate
+// below) — it is never rendered next to an individual employee's name
+// anywhere in the UI. `id` is what everything else (1-to-1s, recognition,
+// CRM rep-matching) references, not `name`, so two people sharing a
+// name doesn't silently merge their records.
+var employees = [
+  {id:'e1',name:'Jamie T.',role:'Engineering',mood:'Great'},{id:'e2',name:'Alex M.',role:'Marketing',mood:'Good'},
+  {id:'e3',name:'Sam K.',role:'Design',mood:'Okay'},{id:'e4',name:'Robin P.',role:'Sales',mood:'Good'},
+  {id:'e5',name:'Casey L.',role:'Operations',mood:'Great'},{id:'e6',name:'Jordan R.',role:'Engineering',mood:'Low'},
+  {id:'e7',name:'Morgan S.',role:'HR',mood:'Good'},{id:'e8',name:'Taylor B.',role:'Finance',mood:'Okay'},
+  {id:'e9',name:'Drew H.',role:'Marketing',mood:'Great'},{id:'e10',name:'Avery W.',role:'Design',mood:'Good'}
+];
+
+function getEmployeeById(id) { return employees.find(function(e){ return e.id===id; }); }
+
+function daysAgoLabel(isoTimestamp) {
+  var days = Math.floor((Date.now() - new Date(isoTimestamp).getTime()) / 86400000);
+  if (days <= 0) return 'Today';
+  if (days === 1) return '1 day ago';
+  return days + ' days ago';
+}
+
+var leaderboardData = [
+  {name:'Jamie T.',steps:71200,goal:60000},{name:'Morgan S.',steps:64800,goal:60000},
+  {name:'Alex M.',steps:58300,goal:60000},{name:'Casey L.',steps:52100,goal:60000},
+  {name:'Drew H.',steps:49600,goal:60000},{name:'Taylor B.',steps:41200,goal:60000}
+];
+
+var holidays = [
+  {name:'Alex M.',start:'14 Jul 2026',end:'18 Jul 2026',days:5,reason:'Family holiday',status:'pending',dept:'Marketing'},
+  {name:'Casey L.',start:'4 Aug 2026',end:'8 Aug 2026',days:5,reason:'Summer break',status:'pending',dept:'Operations'},
+  {name:'Jordan R.',start:'21 Jul 2026',end:'21 Jul 2026',days:1,reason:'Medical appointment',status:'pending',dept:'Engineering'},
+  {name:'Morgan S.',start:'28 Jul 2026',end:'1 Aug 2026',days:5,reason:'Annual leave',status:'pending',dept:'HR'},
+  {name:'Jamie T.',start:'3 Jun 2026',end:'7 Jun 2026',days:5,reason:'Holiday',status:'approved',dept:'Engineering'},
+  {name:'Sam K.',start:'15 May 2026',end:'16 May 2026',days:2,reason:'Personal',status:'denied',dept:'Design'},
+  {name:'Jordan R.',start:'18 Jul 2026',end:'19 Jul 2026',days:2,reason:'Long weekend',status:'approved',dept:'Engineering'}
+];
+
+// Annual leave allowance — each employee can have a different total (full-time, part-time, contract, negotiated extra days, etc.)
+// `total` here is the per-employee override (part-time, contract,
+// negotiated extra days). `used` is NOT stored — it's always computed
+// from actual approved holiday_requests (see DB.allowance.list below),
+// so approving a request here and the allowance total staying in sync
+// isn't something that can silently drift out of sync with itself.
+var allowanceData = [
+  {id:'e1', name:'Jamie T.', total:28},
+  {id:'e2', name:'Alex M.', total:28},
+  {id:'e3', name:'Sam K.', total:22},
+  {id:'e4', name:'Robin P.', total:28},
+  {id:'e5', name:'Casey L.', total:33},
+  {id:'e6', name:'Jordan R.', total:28},
+  {id:'e7', name:'Morgan S.', total:28},
+  {id:'e8', name:'Taylor B.', total:20},
+  {id:'e9', name:'Drew H.', total:28},
+  {id:'e10', name:'Avery W.', total:25}
+];
+var DEFAULT_ALLOWANCE = 28;
+
+// ============================================
+// 1-to-1s — scheduled, with agenda actions that
+// can be converted into real tasks (reuses the
+// existing `tasks` CRM array so there is only
+// ever one task system).
+// ============================================
+var oneToOnes = [
+  {id:1, employeeId:'e1', employee:'Jamie T.', date:'Tomorrow', time:'10:00', status:'upcoming', notes:'', actions:[]},
+  {id:2, employeeId:'e6', employee:'Jordan R.', date:'27 Jun 2026', time:'11:00', status:'completed',
+    notes:'Discussed workload — Jordan flagged feeling stretched across two projects. Agreed to rebalance one of them next sprint. Also keen to build Excel skills for the reporting work.',
+    actions:[{text:'Complete advanced Excel course', done:false, taskId:null},{text:'Rebalance project allocation with team lead', done:true, taskId:null}]},
+  {id:3, employeeId:'e7', employee:'Morgan S.', date:'20 Jun 2026', time:'14:00', status:'completed',
+    notes:'Good catch-up. No concerns raised. Morgan is keen to help run the July mindfulness challenge.',
+    actions:[{text:'Give Morgan ownership of July mindfulness challenge', done:true, taskId:null}]}
+];
+var activeOtoId = null;
+
+// ============================================
+// Recognition — lightweight, visible to the
+// employee in their own app.
+// ============================================
+var recognitions = [
+  {id:1, employeeId:'e1', employee:'Jamie T.', message:'Leading the June step challenge by a mile and still helping teammates get set up — great energy.', date:'2 days ago'},
+  {id:2, employeeId:'e6', employee:'Jordan R.', message:'Really appreciated you flagging the workload concern directly rather than letting it build up. That is exactly the kind of honesty that helps the team.', date:'27 Jun 2026'}
+];
+
+var feedbackData = [
+  {id:1, tag:'Workload', tagCls:'tr', urgent:true, text:'The project deadlines this month have been really unrealistic. Some of us are working evenings and weekends consistently and it is not sustainable. Please can this be raised at the next management meeting.', from:'Anonymous', time:'Today, 11:32', reply:null},
+  {id:2, tag:'Positive', tagCls:'tg', urgent:false, text:'The step challenge has been such a good idea. Never spoken to half these people before and now we have a group chat. Genuinely great for team morale.', from:'Anonymous', time:'Yesterday', reply:null},
+  {id:3, tag:'Suggestion', tagCls:'tn', urgent:false, text:'Would it be possible to have a no-meeting morning on Wednesdays? Even just 9am to 12pm with no calls would make a massive difference to focused work.', from:'Jordan Riley (named)', time:'2 days ago', reply:'Really good idea — we are trialling this from next Wednesday across the team. Thank you for raising it.'},
+  {id:4, tag:'Workload', tagCls:'tw', urgent:false, text:'I feel like the workload is unevenly distributed across the team. Some people always seem to have capacity while others are always stretched. Would be good to address this.', from:'Anonymous', time:'3 days ago', reply:null},
+  {id:5, tag:'Positive', tagCls:'tg', urgent:false, text:'Really appreciated the extra day off last month. Small thing but it made a big difference and showed the company actually cares about work-life balance.', from:'Anonymous', time:'4 days ago', reply:null},
+  {id:6, tag:'Wellbeing', tagCls:'tn', urgent:false, text:'It would be good if the office had a proper quiet space for when you need to focus or just take a mental break away from the open plan.', from:'Anonymous', time:'5 days ago', reply:null}
+];
+
+// 8-week mood trend — average score out of 5
+var trendData = [
+  {week:'W1', score:3.2}, {week:'W2', score:3.3}, {week:'W3', score:3.1},
+  {week:'W4', score:3.4}, {week:'W5', score:3.5}, {week:'W6', score:3.6},
+  {week:'W7', score:3.8}, {week:'W8', score:3.9}
+];
+
+// ============================================
+// CRM — Phase 1 foundation data
+// ============================================
+var customers = [
+  {id:1, name:'Loch Industries', sector:'Manufacturing', location:'Edinburgh', rep:'Jamie T.', health:'green', mrr:348, since:'Jan 2025', lastContact:'3 days ago',
+    summary:'Loch Industries is a strong, engaged customer. Jamie has met with them 6 times this quarter. They recently expressed interest in expanding to their Edinburgh office. Main concern is implementation timeline.'},
+  {id:2, name:'Acme Ltd', sector:'Construction', location:'Glasgow', rep:'Sarah M.', health:'red', mrr:299, since:'Mar 2025', lastContact:'18 days ago',
+    summary:'Acme Ltd has gone quiet — no contact in over two weeks after a concern was raised about pricing. This account needs a check-in call before it is at real risk of churning.'},
+  {id:3, name:'Cairn Group', sector:'Retail', location:'Aberdeen', rep:'Marcus K.', health:'amber', mrr:499, since:'Nov 2024', lastContact:'6 days ago',
+    summary:'Cairn Group raised a pricing objection last meeting that has not yet been resolved. Otherwise usage is healthy and the relationship is generally positive.'},
+  {id:4, name:'Tay Logistics', sector:'Logistics', location:'Dundee', rep:'Sarah M.', health:'green', mrr:299, since:'Feb 2025', lastContact:'1 day ago',
+    summary:'Tay Logistics renewed early and are interested in the Courses Centre add-on. Very low-maintenance, high-satisfaction account.'},
+  {id:5, name:'Glen Partners', sector:'Professional services', location:'Edinburgh', rep:'Jamie T.', health:'amber', mrr:149, since:'Jun 2025', lastContact:'9 days ago',
+    summary:'Glen Partners has a contract renewal due in under two weeks. No red flags but worth a proactive call before the renewal date.'},
+  {id:6, name:'Forth Digital', sector:'Technology', location:'Edinburgh', rep:'Marcus K.', health:'green', mrr:499, since:'Sep 2024', lastContact:'2 days ago',
+    summary:'Forth Digital is one of the healthiest accounts on the book. Regular engagement, no open concerns, positive sentiment across all recent meetings.'},
+  {id:7, name:'Border Foods', sector:'Food and drink', location:'Kelso', rep:'Robin P.', health:'green', mrr:149, since:'Apr 2025', lastContact:'5 days ago',
+    summary:'Border Foods asked about multi-manager access in their last meeting — a genuine expansion signal worth following up on.'},
+  {id:8, name:'Highland Retail Co', sector:'Retail', location:'Inverness', rep:'Robin P.', health:'amber', mrr:299, since:'Aug 2025', lastContact:'11 days ago',
+    summary:'Highland Retail Co has been slower to engage since onboarding. Usage of the platform is lower than expected — worth checking whether they need more support.'}
+];
+
+var custNotes = {
+  1: [
+    {text:'Discussed Edinburgh site expansion — very positive reaction, timeline is the main open question.', author:'Jamie T.', date:'27 Jun 2026'},
+    {text:'Flagged implementation concern before quarterly review — wanted to raise it directly rather than wait.', author:'Jamie T.', date:'25 Jun 2026'}
+  ],
+  2: [
+    {text:'Client raised concerns about pricing increase at renewal. Said they would "need to think about it".', author:'Sarah M.', date:'12 Jun 2026'}
+  ],
+  3: [
+    {text:'Pricing objection raised — comparing us to a cheaper competitor. Need a value conversation, not just a discount.', author:'Marcus K.', date:'24 Jun 2026'}
+  ],
+  4: [
+    {text:'Really positive renewal call — asked directly about the Courses Centre add-on.', author:'Sarah M.', date:'29 Jun 2026'}
+  ],
+  5: [
+    {text:'Renewal date confirmed for 12 Jul. No concerns raised so far but want to get ahead of it.', author:'Jamie T.', date:'20 Jun 2026'}
+  ],
+  6: [
+    {text:'Great engagement across the team. Asked for a case study — worth following up separately.', author:'Marcus K.', date:'28 Jun 2026'}
+  ],
+  7: [
+    {text:'Mentioned they are hiring a second office manager — could mean multi-manager access is now relevant.', author:'Robin P.', date:'25 Jun 2026'}
+  ],
+  8: [
+    {text:'Check-in call — usage lower than expected since onboarding. Offered a refresher session.', author:'Robin P.', date:'19 Jun 2026'}
+  ]
+};
+
+var custTimeline = {
+  1: [
+    {type:'meeting', text:'Meeting — quarterly review · Jamie', sub:'27 Jun · expansion discussed · proposal to follow'},
+    {type:'note', text:'Note added — implementation concern flagged', sub:'25 Jun · Jamie'},
+    {type:'task', text:'Task completed — holiday planner add-on demo sent', sub:'20 Jun · Jamie'}
+  ],
+  2: [
+    {type:'meeting', text:'Meeting — renewal call · Sarah', sub:'12 Jun · pricing concern raised'},
+    {type:'note', text:'Note added — pricing objection logged', sub:'12 Jun · Sarah'}
+  ],
+  3: [
+    {type:'meeting', text:'Meeting — support call · Marcus', sub:'24 Jun · pricing objection raised'}
+  ],
+  4: [
+    {type:'meeting', text:'Meeting — renewal call · Sarah', sub:'29 Jun · renewed early, asked about Courses'}
+  ],
+  5: [
+    {type:'note', text:'Note added — renewal date confirmed', sub:'20 Jun · Jamie'}
+  ],
+  6: [
+    {type:'meeting', text:'Meeting — check-in · Marcus', sub:'28 Jun · asked for a case study'}
+  ],
+  7: [
+    {type:'meeting', text:'Meeting — check-in · Robin', sub:'25 Jun · multi-manager access mentioned'}
+  ],
+  8: [
+    {type:'meeting', text:'Meeting — usage check-in · Robin', sub:'19 Jun · offered refresher session'}
+  ]
+};
+
+var tasks = [
+  {id:1, custId:1, custName:'Loch Industries', text:'Send Edinburgh expansion proposal', rep:'Jamie T.', due:'Fri', urgent:true, done:false},
+  {id:2, custId:1, custName:'Loch Industries', text:'Follow up on implementation timeline concerns', rep:'Jamie T.', due:'Mon', urgent:false, done:false},
+  {id:3, custId:2, custName:'Acme Ltd', text:'Call to re-engage after 18 days of silence', rep:'Sarah M.', due:'Today', urgent:true, done:false},
+  {id:4, custId:3, custName:'Cairn Group', text:'Prepare value comparison vs competitor pricing', rep:'Marcus K.', due:'Tue', urgent:false, done:false},
+  {id:5, custId:5, custName:'Glen Partners', text:'Proactive call ahead of renewal date', rep:'Jamie T.', due:'Wed', urgent:false, done:false},
+  {id:6, custId:7, custName:'Border Foods', text:'Send multi-manager access info', rep:'Robin P.', due:'Thu', urgent:false, done:false},
+  {id:7, custId:6, custName:'Forth Digital', text:'Send case study request to marketing', rep:'Marcus K.', due:'next week', urgent:false, done:true},
+  {id:8, custId:4, custName:'Tay Logistics', text:'Send Courses Centre add-on pricing', rep:'Sarah M.', due:'done', urgent:false, done:true}
+];
+
+var activeCustomerId = null;
+var activeMeetingId = null;
+var currentUser = 'manager'; // 'manager' or a rep name e.g. 'Jamie T.'
+
+// ============================================
+// CRM — Phase 3.5 external intelligence
+// Gathered the day before a meeting from news,
+// social media, and Companies House filings.
+// ============================================
+var externalIntel = {
+  1: { // Loch Industries
+    scannedDate: 'Yesterday, 09:00',
+    news: [{headline:'Loch Industries announces plans for second manufacturing site in Edinburgh', source:'Scottish Manufacturing News', date:'2 days ago'}],
+    social: 'Posted on LinkedIn about hiring for the new Edinburgh site — strong engagement, several comments from current employees.',
+    financial: {trend:'up', detail:'Latest Companies House filing shows turnover up 18% year on year.', estimate:'Growth is likely linked to new contract wins in the manufacturing sector — consistent with what they have raised directly about expansion in recent meetings.'}
+  },
+  4: { // Tay Logistics
+    scannedDate: 'Yesterday, 09:00',
+    news: [],
+    social: 'Recent post celebrating a fleet expansion — no direct mentions of Superb or wellbeing software.',
+    financial: {trend:'flat', detail:'No significant change in the most recent Companies House filing.', estimate:'Nothing unusual to flag — the business appears stable.'}
+  },
+  6: { // Forth Digital
+    scannedDate: 'Yesterday, 09:00',
+    news: [{headline:'Forth Digital named finalist in Scottish Tech Awards 2026', source:'Insider.co.uk', date:'4 days ago'}],
+    social: 'Active hiring posts on LinkedIn this week — several new open roles listed.',
+    financial: {trend:'down', detail:'Latest filing shows a small dip in profit margin despite revenue growth.', estimate:'This is most likely explained by increased headcount investment ahead of their award finalist recognition, not a sign of financial distress.'}
+  }
+};
+
+// ============================================
+// CRM — Phase 2 meetings data
+// ============================================
+var meetings = [
+  {id:1, custId:1, custName:'Loch Industries', rep:'Jamie T.', purpose:'Check-in', format:'video', date:'Today', time:'10:00', status:'upcoming', notes:'',
+    custEmail:'david@lochindustries.co.uk', deckName:'Loch Industries — Expansion Proposal.pptx', managerNote:'They are close to saying yes on the Edinburgh expansion — make sure to bring the proposal deck and confirm the implementation timeline before they ask.', joinLink:'meet.superbwellness.co.uk/m/x7k2p9'},
+  {id:2, custId:4, custName:'Tay Logistics', rep:'Sarah M.', purpose:'Renewal meeting', format:'inperson', date:'Today', time:'14:00', status:'upcoming', notes:'', custEmail:'', deckName:null, managerNote:'', joinLink:null},
+  {id:3, custId:6, custName:'Forth Digital', rep:'Marcus K.', purpose:'Customer review', format:'video', date:'Today', time:'16:30', status:'upcoming', notes:'',
+    custEmail:'hello@forthdigital.io', deckName:null, managerNote:'', joinLink:'meet.superbwellness.co.uk/m/q3m8vt'},
+  {id:4, custId:1, custName:'Loch Industries', rep:'Jamie T.', purpose:'Customer review', format:'video', date:'27 Jun 2026', time:'10:04', status:'completed',
+    notes:'Discussed Edinburgh site expansion — very positive reaction. Main concern raised was implementation timeline. Agreed to send a detailed rollout plan by Friday. Pricing for the second location was touched on but not resolved.'},
+  {id:5, custId:2, custName:'Acme Ltd', rep:'Sarah M.', purpose:'Renewal meeting', format:'video', date:'12 Jun 2026', time:'11:00', status:'completed',
+    notes:'Client raised concerns about the pricing increase at renewal. Said they would need to think about it. No firm decision made — needs a follow-up call.'},
+  {id:6, custId:3, custName:'Cairn Group', rep:'Marcus K.', purpose:'Support meeting', format:'video', date:'24 Jun 2026', time:'13:30', status:'completed',
+    notes:'Pricing objection raised — comparing us to a cheaper competitor. Need a value-focused follow-up rather than a straight discount.'},
+  {id:7, custId:4, custName:'Tay Logistics', rep:'Sarah M.', purpose:'Renewal meeting', format:'inperson', date:'29 Jun 2026', time:'09:30', status:'completed',
+    notes:'Really positive renewal call. Renewed early and asked directly about the Courses Centre add-on.'}
+];
+
+var regs = [
+  {title:'Health and Safety Policy',preview:'All employees are responsible for maintaining a safe working environment. Report any hazards to your line manager immediately...'},
+  {title:'Remote Working Policy',preview:'Employees may work remotely up to 3 days per week with prior agreement from their manager. A suitable workspace must be maintained...'},
+  {title:'Equality and Diversity Policy',preview:'Acme Construction is committed to providing equal opportunities for all employees regardless of age, disability, gender reassignment...'}
+];
+
+var courses = [
+  {icon:'🏥',title:'First Aid Basics',cat:'Health and Safety',completions:18},
+  {icon:'🪑',title:'Correct Sitting Posture',cat:'Posture',completions:24},
+  {icon:'🔥',title:'Fire Safety Awareness',cat:'Fire Safety',completions:22},
+  {icon:'🧠',title:'Mental Health First Aid',cat:'Mental Health',completions:15},
+  {icon:'💚',title:'Managing Workplace Stress',cat:'Wellbeing',completions:19},
+  {icon:'📖',title:'GDPR and Data Protection',cat:'General',completions:28}
+];
+
+var addons = [
+  {icon:'🏖️',name:'Holiday Planner',desc:'Employees request time off in the app. Approve or deny with one click.',price:'+£49/mo',on:true},
+  {icon:'📋',name:'Regulations Centre',desc:'Upload company policies and handbooks for employees to read.',price:'+£29/mo',on:true},
+  {icon:'🎓',name:'Courses Centre',desc:'Create and assign training courses. Progress tracked per employee.',price:'+£79/mo',on:true},
+  {icon:'🤖',name:'AI Wellness Resources',desc:'Employees access AI-generated wellbeing articles on demand.',price:'+£39/mo',on:true}
+];
+
+function pg(id, el) {
+  document.querySelectorAll('.pg').forEach(function(p){p.classList.remove('on');});
+  document.querySelectorAll('.ni').forEach(function(n){n.classList.remove('on');});
+  document.getElementById('pg-'+id).classList.add('on');
+  if(el) el.classList.add('on');
+}
+
+function showOk(id) {
+  var el = document.getElementById(id);
+  el.style.display = 'block';
+  setTimeout(function(){el.style.display='none';},3000);
+}
+
+function escHtml(str) {
+  if(!str) return '';
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function renderLeaderboard() {
+  var html = '';
+  var colours = ['#f59e0b','#94a3b8','#cd7c2f','#7c3aed','#16a34a','#1d4ed8'];
+  leaderboardData.forEach(function(p,i){
+    var pct = Math.min(100,Math.round((p.steps/p.goal)*100));
+    html += '<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #f8fafc">';
+    html += '<div style="width:26px;height:26px;border-radius:50%;background:'+colours[i]+';color:white;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;flex-shrink:0">'+(i+1)+'</div>';
+    html += '<div style="flex:1"><div style="font-size:13px;font-weight:500">'+escHtml(p.name)+'</div><div style="font-size:11px;color:#94a3b8">'+Number(p.steps).toLocaleString()+' steps</div></div>';
+    html += '<div style="width:80px"><div style="background:#f1f5f9;border-radius:4px;height:6px;overflow:hidden;margin-bottom:2px"><div style="width:'+pct+'%;height:100%;border-radius:4px;background:#7c3aed"></div></div><div style="font-size:10px;color:#94a3b8;text-align:right">'+pct+'%</div></div>';
+    html += '</div>';
+  });
+  document.getElementById('leaderboard').innerHTML = html;
+}
+
+async function renderEmployees() {
+  var searchEl = document.getElementById('emp-search');
+  var q = searchEl ? searchEl.value.trim().toLowerCase() : '';
+  var list = await DB.employees.list();
+  var filtered = list.filter(function(e){
+    if(!q) return true;
+    return e.name.toLowerCase().indexOf(q) > -1 || (e.role||'').toLowerCase().indexOf(q) > -1;
+  });
+  var html = '';
+  filtered.forEach(function(e){
+    var isRep = customers.some(function(c){return c.rep===e.name;});
+    var upcoming1to1 = oneToOnes.find(function(o){return o.employeeId===e.id && o.status==='upcoming';});
+    var statusChip = upcoming1to1 ? '<span class="sp sp-purple">1-to-1 '+escHtml(upcoming1to1.date)+'</span>' : isRep ? '<span class="sp sp-p">Rep</span>' : '';
+    html += '<div class="ri" style="cursor:pointer" onclick="openEmployeeProfile(\''+e.id+'\')"><div style="width:32px;height:32px;border-radius:50%;background:#ede9fe;color:#7c3aed;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;flex-shrink:0">'+e.name.split(' ').map(function(w){return w[0];}).join('')+'</div>';
+    html += '<div style="flex:1"><div class="ri-txt" style="font-weight:500">'+escHtml(e.name)+'</div><div class="ri-sub">'+escHtml(e.role)+'</div></div>';
+    html += statusChip+'</div>';
+  });
+  if(!html) html = '<div class="empty">No employees match your search.</div>';
+  document.getElementById('emp-list').innerHTML = html;
+}
+
+// ============================================
+// Employee manager profile — brings together
+// what already exists for this person: role,
+// mood, their open 1-to-1s, recognition, and
+// (if they are a rep) their CRM book. Nothing
+// here is invented — sections are omitted or
+// shown empty when there is no real data.
+// ============================================
+var activeEmpProfileId = null;
+
+function openEmployeeProfile(id) {
+  activeEmpProfileId = id;
+  renderEmployeeProfile();
+  pg('employee-profile', null);
+}
+
+function renderEmployeeProfile() {
+  var e = getEmployeeById(activeEmpProfileId);
+  if(!e){ document.getElementById('emp-profile-body').innerHTML = '<div class="empty">Employee not found.</div>'; return; }
+  var initials = e.name.split(' ').map(function(w){return w[0];}).join('');
+  var empOtos = oneToOnes.filter(function(o){return o.employeeId===e.id;});
+  var upcomingOto = empOtos.find(function(o){return o.status==='upcoming';});
+  var pastOtos = empOtos.filter(function(o){return o.status==='completed';});
+  var empRec = recognitions.filter(function(r){return r.employeeId===e.id;});
+  var isRep = customers.some(function(c){return c.rep===e.name;});
+
+  var html = '';
+  html += '<div class="emp-profile-hdr"><div style="display:flex;align-items:center;gap:12px">';
+  html += '<div class="emp-profile-avatar">'+initials+'</div>';
+  html += '<div><div style="font-size:17px;font-weight:600">'+escHtml(e.name)+'</div><div class="cust-sub">'+escHtml(e.role)+(isRep?' · customer-facing rep':'')+'</div></div>';
+  html += '</div><div class="emp-quick-actions">';
+  html += '<button class="btn btn-o" onclick="openOtoScheduler(\''+e.id+'\')">🗣️ Schedule 1-to-1</button>';
+  html += '<button class="btn btn-g" onclick="pg(\'recognition\',document.querySelector(\'.ni[onclick*=recognition]\'));renderRecognitionPage();document.getElementById(\'rec-employee\').value=\''+e.id+'\'">🌟 Give recognition</button>';
+  html += '</div></div>';
+
+  html += '<div class="ai-box"><div class="ai-box-h">🔒 What managers can and can\'t see</div><div class="ai-box-t" style="font-size:12px">Individual mood, check-in notes, and personal reflections are never shown here — only in Team Wellbeing as anonymous, team-level aggregates. If someone has had a sustained low streak, you\'ll see a general support flag on the dashboard, never their name or score directly.</div></div>';
+
+  html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:.875rem">';
+  html += '<div class="card"><div class="ct">🗣️ 1-to-1s</div>';
+  if(upcomingOto){
+    html += '<div class="ri" style="cursor:pointer" onclick="openOto(\''+upcomingOto.id+'\')"><div class="ri-txt">Next: '+escHtml(upcomingOto.date)+' at '+escHtml(upcomingOto.time)+'</div><span class="sp sp-purple">upcoming</span></div>';
+  } else {
+    html += '<div class="empty">No 1-to-1 scheduled.</div>';
+  }
+  pastOtos.filter(function(o){return o.status==='completed';}).forEach(function(o){
+    html += '<div class="ri" style="cursor:pointer" onclick="openOto(\''+o.id+'\')"><div class="ri-txt">'+escHtml(o.date)+'</div><span class="sp sp-a">completed</span></div>';
+  });
+  html += '</div>';
+
+  html += '<div class="card"><div class="ct">🌟 Recognition received</div>';
+  if(empRec.length){
+    empRec.forEach(function(r){ html += '<div class="ri"><div><div class="ri-txt">'+escHtml(r.message)+'</div><div class="ri-sub">'+escHtml(r.date)+'</div></div></div>'; });
+  } else { html += '<div class="empty">No recognition given yet.</div>'; }
+  html += '</div></div>';
+
+  if(isRep){
+    var repCustomers = customers.filter(function(c){return c.rep===e.name;});
+    var repTasks = tasks.filter(function(t){return t.rep===e.name && !t.done;});
+    html += '<div class="card"><div class="ct">🤝 Customer book ('+repCustomers.length+' accounts)</div>';
+    repCustomers.forEach(function(c){
+      var h = getCustomerHealth(c);
+      html += '<div class="ri" style="cursor:pointer" onclick="pg(\'customers\',document.querySelector(\'.ni[onclick*=customers]\'));setTimeout(function(){openCustomer(\''+c.id+'\')},0)"><div class="ri-txt">'+escHtml(c.name)+'</div><span class="sp '+healthPillCls[h.key]+'">'+healthLabel[h.key]+' · '+h.score+'</span></div>';
+    });
+    html += '<div style="font-size:11px;color:#94a3b8;margin-top:8px">'+repTasks.length+' open customer task'+(repTasks.length!==1?'s':'')+'</div>';
+    html += '</div>';
+  }
+
+  document.getElementById('emp-profile-body').innerHTML = html;
+}
+
+// ============================================
+// Team Wellbeing — aggregated only. Everything
+// here is computed from the real employees /
+// trendData / feedbackData arrays already in
+// the app, never per-individual.
+// ============================================
+async function renderTeamWellbeing() {
+  var counts = await DB.wellbeing.aggregate();
+  var total = Object.values(counts).reduce(function(a,b){return a+b;},0) || 1;
+  var goodPct = Math.round(((counts.Great+counts.Good)/total)*100);
+  var okayPct = Math.round((counts.Okay/total)*100);
+  var needsPct = 100-goodPct-okayPct;
+
+  var summaryHtml = '';
+  summaryHtml += '<div class="mc"><div class="ml">Good or better</div><div class="mv" style="color:#16a34a">'+goodPct+'%</div></div>';
+  summaryHtml += '<div class="mc"><div class="ml">Okay</div><div class="mv" style="color:#a16207">'+okayPct+'%</div></div>';
+  summaryHtml += '<div class="mc"><div class="ml">Needs support</div><div class="mv" style="color:#dc2626">'+needsPct+'%</div></div>';
+  document.getElementById('wb-summary').innerHTML = summaryHtml;
+
+  trendData = await DB.wellbeing.trend(8);
+  if (trendData.length >= 2) {
+    var trendUp = trendData[trendData.length-1].score > trendData[0].score;
+    document.getElementById('wb-trend-lbl').textContent = trendUp ? '↑ Improving over 8 weeks' : '↓ Declining over 8 weeks';
+  } else {
+    document.getElementById('wb-trend-lbl').textContent = '';
+  }
+  renderTrendChartInto('wb-trend-chart');
+
+  var breakdownHtml = '';
+  Object.keys(counts).forEach(function(m){
+    var pct = Math.round((counts[m]/total)*100);
+    var col = m==='Great'?'#16a34a':m==='Good'?'#1d4ed8':m==='Okay'?'#64748b':m==='Low'?'#a16207':'#dc2626';
+    breakdownHtml += '<div class="mbar"><span class="mbar-l">'+m+'</span><div class="mbar-t"><div class="mbar-f" style="width:'+pct+'%;background:'+col+'"></div></div><span class="mbar-p">'+pct+'%</span></div>';
+  });
+  document.getElementById('wb-breakdown').innerHTML = breakdownHtml;
+
+  var tagCounts = {};
+  feedbackData.forEach(function(f){ tagCounts[f.tag] = (tagCounts[f.tag]||0)+1; });
+  var themeKeys = Object.keys(tagCounts).sort(function(a,b){return tagCounts[b]-tagCounts[a];});
+  var themesHtml = '';
+  if(themeKeys.length){
+    themeKeys.forEach(function(t){
+      themesHtml += '<div class="ri"><div class="ri-txt">'+escHtml(t)+'</div><span class="sp sp-purple">'+tagCounts[t]+' message'+(tagCounts[t]!==1?'s':'')+'</span></div>';
+    });
+  } else { themesHtml = '<div class="empty">Not enough feedback yet to identify themes.</div>'; }
+  document.getElementById('wb-themes').innerHTML = themesHtml;
+}
+
+function renderTrendChartInto(targetId) {
+  if (!trendData.length) { document.getElementById(targetId).innerHTML = '<div class="empty">Not enough check-in data yet to show a trend.</div>'; return; }
+  var max = 5;
+  var html = '<div class="trend-bars">';
+  trendData.forEach(function(w, i){
+    var pct = (w.score / max) * 100;
+    var isLast = i === trendData.length - 1;
+    var col = isLast ? '#16a34a' : '#c4b5fd';
+    html += '<div class="trend-bar-wrap"><div class="trend-val">'+w.score.toFixed(1)+'</div><div class="trend-bar" style="height:'+pct+'%;background:'+col+'"></div><div class="trend-lbl">'+w.week+'</div></div>';
+  });
+  html += '</div>';
+  document.getElementById(targetId).innerHTML = html;
+}
+
+// ============================================
+// 1-to-1s
+// ============================================
+function otoTab(tab, btn) {
+  document.getElementById('oto-tab-upcoming').style.display = tab==='upcoming' ? 'block' : 'none';
+  document.getElementById('oto-tab-past').style.display = tab==='past' ? 'block' : 'none';
+  document.querySelectorAll('#pg-onetoones .hol-tab').forEach(function(b){b.classList.remove('on');});
+  btn.classList.add('on');
+}
+
+async function renderOneToOnes() {
+  oneToOnes = await DB.oneToOnes.list(); // keeps every other reader of the global correct without touching each individually
+  var upcoming = oneToOnes.filter(function(o){return o.status==='upcoming';});
+  var past = oneToOnes.filter(function(o){return o.status==='completed';});
+  var upHtml = '';
+  upcoming.forEach(function(o){
+    upHtml += '<div class="ri" style="justify-content:space-between;cursor:pointer" onclick="openOto(\''+o.id+'\')"><div><div class="ri-txt" style="font-weight:600">'+escHtml(o.employee)+'</div><div class="ri-sub">'+escHtml(o.date)+' at '+escHtml(o.time)+'</div></div><span class="sp sp-purple">upcoming</span></div>';
+  });
+  document.getElementById('oto-list-upcoming').innerHTML = upHtml || '<div class="empty">No upcoming 1-to-1s. Schedule one to keep priorities and development on track.</div>';
+  var pastHtml = '';
+  past.forEach(function(o){
+    pastHtml += '<div class="ri" style="justify-content:space-between;cursor:pointer" onclick="openOto(\''+o.id+'\')"><div><div class="ri-txt" style="font-weight:600">'+escHtml(o.employee)+'</div><div class="ri-sub">'+escHtml(o.date)+'</div></div><span class="sp sp-a">completed</span></div>';
+  });
+  document.getElementById('oto-list-past').innerHTML = pastHtml || '<div class="empty">No past 1-to-1s yet.</div>';
+  var badge = document.getElementById('nav-1to1-count');
+  if(badge) badge.textContent = upcoming.length || '';
+}
+
+function openOto(id) {
+  activeOtoId = id; // always a string now (quoted on emit above); find() below normalizes both sides
+  renderOtoDetail();
+  pg('oto-detail', null);
+}
+
+function findOto(id) { return oneToOnes.find(function(x){return String(x.id)===String(id);}); }
+
+function renderOtoDetail() {
+  var o = findOto(activeOtoId);
+  if(!o) return;
+  var html = '';
+  html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem"><div><div style="font-size:16px;font-weight:600">'+escHtml(o.employee)+'</div><div class="cust-sub">'+escHtml(o.date)+' at '+escHtml(o.time)+'</div></div><span class="sp '+(o.status==='upcoming'?'sp-purple':'sp-a')+'">'+escHtml(o.status)+'</span></div>';
+  html += '<div class="card"><div class="ct">📝 Notes</div><textarea class="ta" id="oto-notes-'+o.id+'" placeholder="How are things going? Workload, priorities, development, support needed...">'+escHtml(o.notes)+'</textarea></div>';
+  html += '<div class="card"><div class="ct">✅ Actions</div><div id="oto-actions-'+o.id+'">';
+  o.actions.forEach(function(a, i){
+    html += '<div class="action-row"><input type="checkbox" '+(a.done?'checked':'')+' onchange="toggleOtoAction(\''+o.id+'\','+i+')"><span class="action-row-text'+(a.done?' done':'')+'">'+escHtml(a.text)+'</span>';
+    html += a.taskId ? '<span class="sp sp-a" style="flex-shrink:0">task created</span>' : '<button class="btn btn-o" style="padding:4px 9px;font-size:11px;flex-shrink:0" onclick="convertOtoActionToTask(\''+o.id+'\','+i+')">→ Task</button>';
+    html += '</div>';
+  });
+  html += '</div>';
+  html += '<div class="reply-input-row" style="margin-top:10px"><input type="text" id="oto-new-action-'+o.id+'" placeholder="Add an action from this 1-to-1..."><button class="btn btn-p" onclick="addOtoAction(\''+o.id+'\')">Add</button></div>';
+  html += '</div>';
+  html += '<button class="btn btn-g btn-full" onclick="saveOtoNotes(\''+o.id+'\')">Save notes</button>';
+  document.getElementById('oto-detail-body').innerHTML = html;
+}
+
+async function saveOtoNotes(id) {
+  var notes = document.getElementById('oto-notes-'+id).value;
+  await DB.oneToOnes.saveNotes(id, notes);
+  await renderOneToOnes();
+  renderOtoDetail();
+}
+
+async function addOtoAction(id) {
+  var input = document.getElementById('oto-new-action-'+id);
+  var text = input.value.trim();
+  if(!text) return;
+  await DB.oneToOnes.addAction(id, text);
+  await renderOneToOnes();
+  renderOtoDetail();
+}
+
+async function toggleOtoAction(id, i) {
+  var o = findOto(id);
+  var action = o.actions[i];
+  var newDone = !action.done;
+  await DB.oneToOnes.toggleAction(id, i, action.id, newDone);
+  await renderOneToOnes();
+  renderOtoDetail();
+}
+
+async function convertOtoActionToTask(id, i) {
+  var o = findOto(id);
+  var action = o.actions[i];
+  var newTask = await DB.tasks.create({
+    customerId: null, custName: 'Internal', repName: o.employee, repEmployeeId: o.employeeId,
+    text: action.text, due: 'This week', urgent: false, source: '1-to-1'
+  });
+  action.taskId = newTask.id;
+  if (action.id) await DB.oneToOnes.linkActionToTask(action.id, newTask.id); // live-mode only; demo actions have no persisted id
+  await renderOneToOnes();
+  renderOtoDetail();
+  renderTasks();
+}
+
+function openOtoScheduler(prefillId) {
+  var select = document.getElementById('oto-sched-employee');
+  select.innerHTML = employees.map(function(e){return '<option value="'+e.id+'">'+escHtml(e.name)+'</option>';}).join('');
+  if(prefillId) select.value = prefillId;
+  document.getElementById('oto-scheduler-overlay').style.display = 'flex';
+}
+
+function closeOtoScheduler() {
+  document.getElementById('oto-scheduler-overlay').style.display = 'none';
+}
+
+async function saveOto() {
+  var employeeId = document.getElementById('oto-sched-employee').value;
+  var date = document.getElementById('oto-sched-date').value;
+  var time = document.getElementById('oto-sched-time').value;
+  if(!date || !time){ alert('Please choose a date and time'); return; }
+  await DB.oneToOnes.create(employeeId, date, time);
+  closeOtoScheduler();
+  document.getElementById('oto-sched-date').value = '';
+  document.getElementById('oto-sched-time').value = '';
+  renderOneToOnes();
+  renderActionCentre();
+  pg('onetoones', document.querySelector('.ni[onclick*=onetoones]'));
+}
+
+// ============================================
+// Recognition
+// ============================================
+function renderRecognitionPage() {
+  var select = document.getElementById('rec-employee');
+  select.innerHTML = employees.map(function(e){return '<option value="'+e.id+'">'+escHtml(e.name)+'</option>';}).join('');
+  renderRecognitionList();
+}
+
+function renderRecognitionList() {
+  var html = '';
+  recognitions.slice().reverse().forEach(function(r){
+    html += '<div class="rec-card"><div class="rec-card-hdr">🌟 '+escHtml(r.employee)+'</div><div style="font-size:12.5px;color:#334155;line-height:1.6">'+escHtml(r.message)+'</div><div style="font-size:11px;color:#94a3b8;margin-top:4px">'+escHtml(r.date)+'</div></div>';
+  });
+  document.getElementById('rec-list').innerHTML = html || '<div class="empty">No recognition given yet.</div>';
+}
+
+// ============================================
+// Performance — deliberately light. Built only
+// from data that genuinely exists: 1-to-1
+// actions, recognition, and company-wide course
+// completions. No goals system, no ratings, no
+// invented scores.
+// ============================================
+// ============================================
+// Reports — every number here is either genuinely
+// range-filtered (using a real created_at/scheduled_at
+// timestamp) or explicitly labeled as "total" / "right
+// now" when the schema doesn't support a date-scoped
+// version. Nothing is silently presented as range-scoped
+// when it isn't backed by a real date field.
+// ============================================
+var reportRangeDays = 30;
+
+function setReportRange(days, btn) {
+  reportRangeDays = days;
+  document.querySelectorAll('#pg-reports .hol-tab').forEach(function(b){ b.classList.remove('on'); });
+  btn.classList.add('on');
+  renderReports();
+}
+
+function inReportRange(dateVal) {
+  if (SUPERB_CONFIG.DEMO_MODE) return true; // demo data has no real timestamps to filter by — see the on-page note
+  if (!dateVal) return false;
+  return (Date.now() - new Date(dateVal).getTime()) <= reportRangeDays * 86400000;
+}
+
+async function renderReports() {
+  document.getElementById('report-demo-note').style.display = SUPERB_CONFIG.DEMO_MODE ? 'block' : 'none';
+
+  var tasksList = await DB.tasks.list();
+  var holidaysList = await DB.holidays.list();
+  var coursesList = await DB.courses.list();
+  var feedbackList = await DB.feedback.list();
+  var customersList = await DB.customers.list();
+  var meetingsList = await DB.meetings.list();
+  var moodCounts = await DB.wellbeing.aggregate();
+
+  // TEAM
+  var holsInRange = holidaysList.filter(function(h){ return inReportRange(h.created_at); });
+  var pendingHols = holidaysList.filter(function(h){ return h.status==='pending'; });
+  var moodTotal = Object.values(moodCounts).reduce(function(a,b){return a+b;},0) || 1;
+  var teamHtml = '<div class="mg" style="grid-template-columns:repeat(4,1fr)">';
+  teamHtml += '<div class="mc"><div class="ml">Holiday requests in range</div><div class="mv">'+holsInRange.length+'</div></div>';
+  teamHtml += '<div class="mc"><div class="ml">Pending approval right now</div><div class="mv" style="color:#a16207">'+pendingHols.length+'</div></div>';
+  teamHtml += '<div class="mc"><div class="ml">Feedback messages (total)</div><div class="mv">'+feedbackList.length+'</div></div>';
+  teamHtml += '<div class="mc"><div class="ml">Mood this week — good or better</div><div class="mv" style="color:#16a34a">'+Math.round(((moodCounts.Great+moodCounts.Good)/moodTotal)*100)+'%</div></div>';
+  teamHtml += '</div>';
+  document.getElementById('report-team').innerHTML = teamHtml;
+
+  // WORK — task completion isn't timestamped in the schema (no
+  // completed_at column), so "completed in range" genuinely can't be
+  // reported — showing "open right now" and "created in range" instead,
+  // which the data actually supports.
+  var tasksInRange = tasksList.filter(function(t){ return inReportRange(t.createdAt); });
+  var openTasks = tasksList.filter(function(t){ return !t.done; });
+  var overdueTasks = tasksList.filter(function(t){ return !t.done && t.dueDate && new Date(t.dueDate) < new Date(); });
+  var coursesCompleted = coursesList.reduce(function(s,c){return s+(c.completions||0);},0);
+  var workHtml = '<div class="mg" style="grid-template-columns:repeat(4,1fr)">';
+  workHtml += '<div class="mc"><div class="ml">Tasks created in range</div><div class="mv">'+tasksInRange.length+'</div></div>';
+  workHtml += '<div class="mc"><div class="ml">Open tasks right now</div><div class="mv">'+openTasks.length+'</div></div>';
+  workHtml += '<div class="mc"><div class="ml">Overdue right now</div><div class="mv" style="color:'+(overdueTasks.length?'#dc2626':'#16a34a')+'">'+(SUPERB_CONFIG.DEMO_MODE?'—':overdueTasks.length)+'</div></div>';
+  workHtml += '<div class="mc"><div class="ml">Course completions (total)</div><div class="mv">'+coursesCompleted+'</div></div>';
+  workHtml += '</div>';
+  if (SUPERB_CONFIG.DEMO_MODE) workHtml += '<div style="font-size:11px;color:#94a3b8;margin-top:8px">Overdue is shown as "—" in demo — demo tasks use illustrative due labels ("Fri", "This week") rather than real dates to compare against.</div>';
+  document.getElementById('report-work').innerHTML = workHtml;
+
+  // CRM
+  var newCustomers = customersList.filter(function(c){ return inReportRange(c.createdAt); });
+  var meetingsInRange = meetingsList.filter(function(m){ return inReportRange(m.scheduledAt); });
+  var completedMeetings = meetingsInRange.filter(function(m){ return m.status==='completed'; });
+  var openCrmTasks = tasksList.filter(function(t){ return t.custId && !t.done; });
+  var crmHtml = '<div class="mg" style="grid-template-columns:repeat(4,1fr)">';
+  crmHtml += '<div class="mc"><div class="ml">New customers in range</div><div class="mv">'+newCustomers.length+'</div></div>';
+  crmHtml += '<div class="mc"><div class="ml">Meetings in range</div><div class="mv">'+meetingsInRange.length+'</div></div>';
+  crmHtml += '<div class="mc"><div class="ml">Completed in range</div><div class="mv">'+completedMeetings.length+'</div></div>';
+  crmHtml += '<div class="mc"><div class="ml">Open customer follow-ups right now</div><div class="mv">'+openCrmTasks.length+'</div></div>';
+  crmHtml += '</div>';
+  document.getElementById('report-crm').innerHTML = crmHtml;
+}
+
+// ============================================
+// AI Insights — explains itself. Every insight
+// states the real numbers behind it rather than
+// asserting a conclusion with no supporting data
+// shown. If there isn't enough data for a reliable
+// read, it says so instead of guessing.
+// ============================================
+async function renderAiInsights() {
+  var el = document.getElementById('ai-insights-list');
+  el.innerHTML = '<div class="ai-loading-box"><div class="ai-loading-spin"></div><div style="font-size:13px;color:#334155">Reading your team and customer data...</div></div>';
+
+  var tasksList = await DB.tasks.list();
+  var holidaysList = await DB.holidays.list();
+  var customersList = await DB.customers.list();
+  var trend = await DB.wellbeing.trend(8);
+  var moodCounts = await DB.wellbeing.aggregate();
+
+  var insights = [];
+
+  // Workload trend — only asserted if there's enough data to support it
+  if (trend.length >= 4) {
+    var recentAvg = (trend[trend.length-1].score + trend[trend.length-2].score) / 2;
+    var earlierAvg = (trend[0].score + trend[1].score) / 2;
+    var diff = recentAvg - earlierAvg;
+    if (Math.abs(diff) >= 0.2) {
+      insights.push({
+        title: diff > 0 ? 'Team mood has improved recently' : 'Team mood has dipped recently',
+        body: 'Average mood moved from '+earlierAvg.toFixed(1)+'/5 (start of this period) to '+recentAvg.toFixed(1)+'/5 (most recent two weeks).',
+        why: 'Based on '+trend.reduce(function(s,w){return s+(w.responses||0);},0)+' check-in responses across '+trend.length+' weeks.'
+      });
+    }
+  } else {
+    insights.push({ title: 'Not enough check-in history yet', body: 'Mood trend insights need a few more weeks of check-ins to be reliable.', why: 'Currently '+trend.length+' week(s) of data — 4+ weeks needed for a trend read.' });
+  }
+
+  // Overdue task concentration — real counts, no speculation about why
+  var overdue = tasksList.filter(function(t){ return !t.done && t.dueDate && new Date(t.dueDate) < new Date(); });
+  if (overdue.length >= 3) {
+    var byRep = {};
+    overdue.forEach(function(t){ byRep[t.rep] = (byRep[t.rep]||0)+1; });
+    var worstRep = Object.keys(byRep).sort(function(a,b){return byRep[b]-byRep[a];})[0];
+    insights.push({
+      title: overdue.length+' overdue tasks across the team',
+      body: worstRep ? worstRep+' currently has the most ('+byRep[worstRep]+') — worth checking in before they stack up further.' : 'Worth a look at the Tasks page.',
+      why: 'Counted directly from open tasks with a due date in the past.'
+    });
+  }
+
+  // Pending holiday backlog
+  var pending = holidaysList.filter(function(h){ return h.status==='pending'; });
+  if (pending.length >= 3) {
+    insights.push({ title: pending.length+' holiday requests awaiting your approval', body: 'The oldest has been waiting since '+pending[pending.length-1].start+'.', why: 'Counted directly from pending holiday requests.' });
+  }
+
+  // Customer health concentration
+  var atRisk = customersList.filter(function(c){ return getCustomerHealth(c).key==='red'; });
+  if (atRisk.length) {
+    insights.push({ title: atRisk.length+' customer'+(atRisk.length!==1?'s':'')+' currently at risk', body: atRisk.map(function(c){return c.name;}).join(', ')+'.', why: 'Health score computed from contact recency, open tasks, and recent meeting sentiment — see each customer\'s profile for the exact reasons.' });
+  }
+
+  if (!insights.length) {
+    insights.push({ title: 'Nothing notable right now', body: 'No patterns in the current data crossed a threshold worth flagging.', why: 'This is a genuine "all clear," not a placeholder — insights only show when the underlying numbers actually support one.' });
+  }
+
+  var html = '';
+  insights.forEach(function(i){
+    html += '<div class="ai-box"><div class="ai-box-h">✨ '+escHtml(i.title)+'</div><div class="ai-box-t">'+escHtml(i.body)+'</div><div style="font-size:10.5px;color:#94a3b8;margin-top:8px"><b>Why am I seeing this?</b> '+escHtml(i.why)+'</div></div>';
+  });
+  el.innerHTML = html;
+}
+
+async function renderPerformance() {
+  var courseList = await DB.courses.list();
+  var totalCompletions = courseList.reduce(function(s,c){return s+(c.completions||0);}, 0);
+  var totalActions = oneToOnes.reduce(function(s,o){return s+o.actions.length;}, 0);
+  var doneActions = oneToOnes.reduce(function(s,o){return s+o.actions.filter(function(a){return a.done;}).length;}, 0);
+
+  var summaryHtml = '';
+  summaryHtml += '<div class="mc"><div class="ml">Course completions</div><div class="mv">'+totalCompletions+'</div><div class="mc-c">company-wide, this period</div></div>';
+  summaryHtml += '<div class="mc"><div class="ml">1-to-1 actions closed</div><div class="mv">'+doneActions+' / '+totalActions+'</div></div>';
+  summaryHtml += '<div class="mc"><div class="ml">Recognition given</div><div class="mv">'+recognitions.length+'</div></div>';
+  document.getElementById('perf-summary').innerHTML = summaryHtml;
+
+  var html = '<table style="width:100%;border-collapse:collapse;font-size:12.5px">';
+  html += '<tr style="text-align:left;color:#94a3b8;font-size:11px"><th style="padding:6px 8px;font-weight:500">Employee</th><th style="padding:6px 8px;font-weight:500">1-to-1 actions</th><th style="padding:6px 8px;font-weight:500">Recognition</th><th style="padding:6px 8px;font-weight:500">Next 1-to-1</th></tr>';
+  employees.forEach(function(e){
+    var empOtos = oneToOnes.filter(function(o){return o.employeeId===e.id;});
+    var empActions = empOtos.reduce(function(s,o){return s.concat(o.actions);}, []);
+    var empDone = empActions.filter(function(a){return a.done;}).length;
+    var empRecCount = recognitions.filter(function(r){return r.employeeId===e.id;}).length;
+    var upcoming = empOtos.find(function(o){return o.status==='upcoming';});
+    html += '<tr style="border-top:1px solid #f8fafc;cursor:pointer" onclick="openEmployeeProfile(\''+e.id+'\')">';
+    html += '<td style="padding:8px">'+escHtml(e.name)+'</td>';
+    html += '<td style="padding:8px">'+(empActions.length ? empDone+' / '+empActions.length : '—')+'</td>';
+    html += '<td style="padding:8px">'+(empRecCount || '—')+'</td>';
+    html += '<td style="padding:8px">'+(upcoming ? escHtml(upcoming.date) : '—')+'</td>';
+    html += '</tr>';
+  });
+  html += '</table>';
+  document.getElementById('perf-table').innerHTML = html;
+}
+
+async function giveRecognition() {
+  var employeeId = document.getElementById('rec-employee').value;
+  var message = document.getElementById('rec-message').value.trim();
+  if(!message){ alert('Please write a message'); return; }
+  var emp = getEmployeeById(employeeId);
+  await DB.recognition.give(employeeId, message);
+  document.getElementById('rec-message').value = '';
+  var ok = document.getElementById('rec-ok');
+  ok.textContent = '✓ Recognition sent — '+(emp?emp.name:'')+' will see this in their app';
+  ok.style.display = 'block';
+  setTimeout(function(){ ok.style.display = 'none'; }, 3000);
+  renderRecognitionList();
+}
+
+// ============================================
+// Action Centre — built entirely from data
+// that already exists elsewhere in the app.
+// Nothing here is invented.
+// ============================================
+async function renderActionCentre() {
+  var items = [];
+  var moodCounts = await DB.wellbeing.aggregate();
+  var lowMoodCount = (moodCounts.Low||0) + (moodCounts.Struggling||0);
+  if(lowMoodCount>0){
+    items.push({icon:'💚', col:'#fee2e2', iconCol:'#dc2626', title:lowMoodCount+' employee'+(lowMoodCount!==1?'s':'')+' logged low mood this week', sub:'Consider a team wellbeing check-in', btn:'Review', action:"pg('wellbeing',document.querySelector('.ni[onclick*=wellbeing]'))"});
+  }
+  var pendingHols = holidays.filter(function(h){return h.status==='pending';});
+  if(pendingHols.length>0){
+    items.push({icon:'🏖️', col:'#fef9c3', iconCol:'#a16207', title:pendingHols.length+' holiday request'+(pendingHols.length!==1?'s':'')+' awaiting approval', sub:'Oldest: '+pendingHols[0].name, btn:'Review', action:"pg('holidays',document.querySelector('.ni[onclick*=holidays]'))"});
+  }
+  var urgentFb = feedbackData.filter(function(f){return f.urgent && !f.reply;});
+  if(urgentFb.length>0){
+    items.push({icon:'✉️', col:'#ede9fe', iconCol:'#7c3aed', title:urgentFb.length+' urgent feedback message'+(urgentFb.length!==1?'s':'')+' needs a reply', sub:'From the mail centre', btn:'Reply', action:"pg('feedback',document.querySelector('.ni[onclick*=feedback]'))"});
+  }
+  var upcomingOtos = oneToOnes.filter(function(o){return o.status==='upcoming';});
+  upcomingOtos.forEach(function(o){
+    items.push({icon:'🗣️', col:'#dbeafe', iconCol:'#1d4ed8', title:'1-to-1 with '+o.employee, sub:o.date+' at '+o.time, btn:'Prepare', action:"openOto('"+o.id+"')"});
+  });
+  var crmAlerts = generateCrmAlerts();
+  crmAlerts.filter(function(a){return a.level==='red';}).forEach(function(a){
+    items.push({icon:'🤝', col:'#fee2e2', iconCol:'#dc2626', title:a.text, sub:a.sub, btn:'View', action:"pg('customers',document.querySelector('.ni[onclick*=customers]'))"});
+  });
+
+  var html = '';
+  items.forEach(function(it){
+    html += '<div class="action-item"><div class="action-icon" style="background:'+it.col+';color:'+it.iconCol+'">'+it.icon+'</div>';
+    html += '<div class="action-body"><div class="action-title">'+escHtml(it.title)+'</div><div class="action-sub">'+escHtml(it.sub)+'</div></div>';
+    html += '<button class="action-btn" onclick="'+it.action+'">'+it.btn+'</button></div>';
+  });
+  document.getElementById('action-centre-list').innerHTML = html || '<div class="action-empty">Nothing needs your attention right now — nice work.</div>';
+}
+
+function alertTab(tab, btn) {
+  document.getElementById('alert-tab-team').style.display = tab==='team' ? 'block' : 'none';
+  document.getElementById('alert-tab-customers').style.display = tab==='customers' ? 'block' : 'none';
+  document.querySelectorAll('#pg-alerts .hol-tab').forEach(function(b){b.classList.remove('on');});
+  btn.classList.add('on');
+}
+
+// ============================================
+// CRM Alerts — generated live from health
+// scores, overdue tasks, and renewal signals.
+// Scoped to the current user, same as
+// Customers, Meetings and Tasks.
+// ============================================
+function generateCrmAlerts() {
+  var scoped = currentUser === 'manager' ? customers : customers.filter(function(c){return c.rep===currentUser;});
+  var alerts = [];
+
+  scoped.forEach(function(c){
+    var h = getCustomerHealth(c);
+    if(h.key==='red'){
+      alerts.push({level:'red', text:c.name+' health dropped to '+h.score+'/100', sub:'Rep: '+c.rep+' · last contact '+c.lastContact+' · consider a re-engagement call'});
+    } else if(h.key==='amber'){
+      alerts.push({level:'amber', text:c.name+' needs attention — score '+h.score+'/100', sub:'Rep: '+c.rep+' · worth a check-in before it slips further'});
+    }
+    var openUrgent = tasks.filter(function(t){return t.custId===c.id && !t.done && t.urgent;});
+    if(openUrgent.length){
+      alerts.push({level:'red', text:openUrgent.length+' urgent task'+(openUrgent.length>1?'s':'')+' overdue for '+c.name, sub:'Rep: '+c.rep+' · '+openUrgent.map(function(t){return t.text;}).join('; ')});
+    }
+  });
+
+  // Rep-level task load flag — only meaningful in manager view
+  if(currentUser==='manager'){
+    var repLoad = {};
+    tasks.filter(function(t){return !t.done;}).forEach(function(t){ repLoad[t.rep]=(repLoad[t.rep]||0)+1; });
+    Object.keys(repLoad).forEach(function(rep){
+      if(repLoad[rep] >= 3){
+        alerts.push({level:'amber', text:rep+' has '+repLoad[rep]+' open tasks across their accounts', sub:'Worth checking in on workload before something slips'});
+      }
+    });
+  }
+
+  return alerts;
+}
+
+function renderCrmAlerts() {
+  var alerts = generateCrmAlerts();
+  document.getElementById('crm-alert-count').textContent = alerts.length || '';
+
+  var html = '';
+  alerts.forEach(function(a){
+    var col = a.level==='red' ? '#dc2626' : '#a16207';
+    html += '<div class="ri"><div class="alert-dot" style="background:'+col+';margin-top:4px"></div><div><div class="ri-txt" style="font-weight:600">'+escHtml(a.text)+'</div><div class="ri-sub" style="margin-top:3px">'+escHtml(a.sub)+'</div></div></div>';
+  });
+  document.getElementById('crm-alert-list').innerHTML = html || '<div class="empty">No customer alerts right now — everything looks under control.</div>';
+}
+
+// ============================================
+// Manager responsiveness score
+// The % of feedback messages that have been
+// replied to — visible to the manager here,
+// and to the whole team (anonymously) in the
+// Employee app.
+// ============================================
+function renderResponsivenessCard() {
+  var total = feedbackData.length;
+  var replied = feedbackData.filter(function(f){return f.reply;}).length;
+  var pct = total ? Math.round((replied/total)*100) : 100;
+  var col = pct>=80 ? '#16a34a' : pct>=50 ? '#a16207' : '#dc2626';
+  var html = '<div class="ct">📬 Your responsiveness</div>';
+  html += '<div style="display:flex;align-items:center;gap:12px">';
+  html += '<div style="font-size:24px;font-weight:700;color:'+col+'">'+pct+'%</div>';
+  html += '<div style="font-size:12px;color:#64748b;line-height:1.6">of feedback replied to this quarter<br>'+replied+' of '+total+' messages — your team can see this stat too, it builds trust that feedback actually gets read.</div>';
+  html += '</div>';
+  document.getElementById('responsiveness-card').innerHTML = html;
+}
+
+async function renderFeedback() {
+  var searchEl = document.getElementById('fb-search');
+  var q = searchEl ? searchEl.value.trim().toLowerCase() : '';
+  var list = await DB.feedback.list();
+  var filtered = list.filter(function(f){
+    if(!q) return true;
+    return f.text.toLowerCase().indexOf(q) > -1 || f.tag.toLowerCase().indexOf(q) > -1 || f.from.toLowerCase().indexOf(q) > -1;
+  });
+  var html = '';
+  filtered.forEach(function(f){
+    html += '<div class="ri"><div style="flex:1">';
+    html += '<span class="tag '+f.tagCls+'">'+escHtml(f.tag)+(f.urgent?' · urgent':'')+'</span>';
+    html += '<div class="ri-txt">'+escHtml(f.text)+'</div>';
+    html += '<div class="ri-sub">'+escHtml(f.from)+' · '+escHtml(f.time)+'</div>';
+    if(f.reply){
+      html += '<div class="reply-existing"><b>Your reply:</b> '+escHtml(f.reply)+'</div>';
+    } else {
+      html += '<span class="reply-toggle" data-id="'+f.id+'" onclick="showReplyBox(this)">↩ Reply to this message</span>';
+      html += '<div class="reply-box" id="reply-box-'+f.id+'" style="display:none">';
+      html += '<div class="reply-input-row"><input type="text" id="reply-input-'+f.id+'" placeholder="Write a reply — the sender will see this, even if anonymous"><button class="btn btn-p" data-id="'+f.id+'" onclick="sendReply(this)">Send</button></div>';
+      html += '</div>';
+    }
+    html += '</div></div>';
+  });
+  if(!html) html = '<div class="empty">No feedback matches your search.</div>';
+  document.getElementById('fb-list').innerHTML = html;
+}
+
+function showReplyBox(el) {
+  var id = el.getAttribute('data-id');
+  document.getElementById('reply-box-'+id).style.display = 'block';
+  el.style.display = 'none';
+}
+
+async function sendReply(btn) {
+  var id = SUPERB_CONFIG.DEMO_MODE ? parseInt(btn.getAttribute('data-id')) : btn.getAttribute('data-id');
+  var input = document.getElementById('reply-input-'+btn.getAttribute('data-id'));
+  var text = input.value.trim();
+  if(!text){ alert('Please write a reply first'); return; }
+  await DB.feedback.reply(id, text);
+  renderFeedback();
+  renderActionCentre();
+}
+
+async function renderAllowance() {
+  var list = await DB.allowance.list();
+  var html = '';
+  list.forEach(function(a){
+    var total = a.total;
+    var pct = Math.min(100, Math.round((a.used / total) * 100));
+    var barColour = pct >= 85 ? '#dc2626' : pct >= 60 ? '#a16207' : '#16a34a';
+    html += '<div class="allow-row">';
+    html += '<div class="allow-name">'+escHtml(a.name)+'</div>';
+    html += '<div class="allow-track"><div class="allow-fill" style="width:'+pct+'%;background:'+barColour+'"></div></div>';
+    html += '<div class="allow-txt">'+a.used+' / '+total+' used</div>';
+    html += '<div class="allow-edit">';
+    html += '<input type="number" min="0" max="365" class="allow-edit-input" id="allow-edit-'+a.id+'" value="'+total+'">';
+    html += '<button class="btn btn-o allow-save-btn" data-id="'+a.id+'" onclick="saveAllowance(this)">Save</button>';
+    html += '</div>';
+    html += '</div>';
+  });
+  document.getElementById('allowance-list').innerHTML = html;
+}
+
+async function saveAllowance(btn) {
+  var id = btn.getAttribute('data-id');
+  var input = document.getElementById('allow-edit-'+id);
+  var newTotal = parseInt(input.value);
+  if (isNaN(newTotal) || newTotal < 0) { alert('Please enter a valid number of days'); return; }
+  await DB.allowance.setTotal(id, newTotal);
+  renderAllowance();
+  var msg = document.getElementById('allow-saved-msg');
+  msg.style.display = 'block';
+  setTimeout(function(){ msg.style.display = 'none'; }, 2500);
+}
+
+async function saveDefaultAllowance() {
+  var input = document.getElementById('default-allow-input');
+  var val = parseInt(input.value);
+  if (isNaN(val) || val < 0) { alert('Please enter a valid number of days'); return; }
+  await DB.allowance.setDefault(val);
+  alert('New employees who join from now on will start with ' + val + ' days per year.');
+}
+
+async function renderTrendChart() {
+  trendData = await DB.wellbeing.trend(8); // keeps other direct readers of the global correct
+  var max = 5;
+  if (!trendData.length) {
+    document.getElementById('trend-chart').innerHTML = '<div class="empty">Not enough check-in data yet to show a trend.</div>';
+    return;
+  }
+  var html = '<div class="trend-bars">';
+  trendData.forEach(function(w, i){
+    var pct = (w.score / max) * 100;
+    var isLast = i === trendData.length - 1;
+    var col = isLast ? '#16a34a' : '#c4b5fd';
+    html += '<div class="trend-bar-wrap">';
+    html += '<div class="trend-val">'+w.score.toFixed(1)+'</div>';
+    html += '<div class="trend-bar" style="height:'+pct+'%;background:'+col+'"></div>';
+    html += '<div class="trend-lbl">'+w.week+'</div>';
+    html += '</div>';
+  });
+  html += '</div>';
+  document.getElementById('trend-chart').innerHTML = html;
+}
+
+function parseHolDate(str) {
+  var months = {Jan:0,Feb:1,Mar:2,Apr:3,May:4,Jun:5,Jul:6,Aug:7,Sep:8,Oct:9,Nov:10,Dec:11};
+  var parts = str.split(' ');
+  return new Date(parseInt(parts[2]), months[parts[1]], parseInt(parts[0]));
+}
+
+function findConflicts(request) {
+  var reqStart = parseHolDate(request.start);
+  var reqEnd = parseHolDate(request.end);
+  var conflicts = [];
+  holidays.forEach(function(h){
+    if (h === request || h.status !== 'approved' || h.dept !== request.dept) return;
+    var s = parseHolDate(h.start);
+    var e = parseHolDate(h.end);
+    if (reqStart <= e && reqEnd >= s) conflicts.push(h.name);
+  });
+  return conflicts;
+}
+
+async function renderHolidays() {
+  var list = await DB.holidays.list();
+  var html = '';
+  list.forEach(function(h,i){
+    var ident = SUPERB_CONFIG.DEMO_MODE ? i : h.id;
+    html += '<div class="hol-row"><div class="hol-info"><div class="hol-name">'+escHtml(h.name)+' <span style="font-weight:400;color:#94a3b8;font-size:11px">· '+escHtml(h.dept||'')+'</span></div>';
+    html += '<div class="hol-dates">'+escHtml(h.start)+' to '+escHtml(h.end)+' ('+h.days+' day'+(h.days!==1?'s':'')+(h.reason?' · '+escHtml(h.reason):'')+')';
+    html += '</div>';
+    if (h.status === 'pending') {
+      var conflicts = findConflicts(h);
+      if (conflicts.length > 0) {
+        html += '<div class="conflict-warn">⚠ '+conflicts.join(', ')+' from '+escHtml(h.dept)+' already approved for overlapping dates</div>';
+      }
+    }
+    html += '</div><div class="hol-actions">';
+    if(h.status==='pending'){
+      html += '<button class="btn btn-g" data-id="'+ident+'" onclick="approveHol(this)">Approve</button><button class="btn btn-r" data-id="'+ident+'" onclick="denyHol(this)">Deny</button>';
+    } else {
+      var cls = h.status==='approved'?'sp-a':'sp-d';
+      html += '<span class="sp '+cls+'">'+h.status+'</span>';
+    }
+    html += '</div></div>';
+  });
+  document.getElementById('hol-list').innerHTML = html;
+}
+
+async function approveHol(btn) {
+  var ident = SUPERB_CONFIG.DEMO_MODE ? parseInt(btn.getAttribute('data-id')) : btn.getAttribute('data-id');
+  await DB.holidays.approve(ident);
+  renderHolidays();
+  renderActionCentre();
+}
+
+async function denyHol(btn) {
+  var ident = SUPERB_CONFIG.DEMO_MODE ? parseInt(btn.getAttribute('data-id')) : btn.getAttribute('data-id');
+  await DB.holidays.deny(ident);
+  renderHolidays();
+  renderActionCentre();
+}
+
+async function renderRegs() {
+  var list = await DB.regulations.list();
+  var html = '';
+  list.forEach(function(r){
+    var preview = r.preview || (r.content ? r.content.substring(0,120)+'...' : '');
+    html += '<div class="ri"><div><div class="ri-txt" style="font-weight:500">'+escHtml(r.title)+'</div><div class="ri-sub" style="margin-top:3px">'+escHtml(preview)+'</div></div></div>';
+  });
+  document.getElementById('reg-list').innerHTML = html;
+}
+
+async function addReg() {
+  var t = document.getElementById('reg-title').value.trim();
+  var b = document.getElementById('reg-body').value.trim();
+  if(!t||!b){alert('Please add a title and content');return;}
+  await DB.regulations.add(t, b);
+  document.getElementById('reg-title').value='';
+  document.getElementById('reg-body').value='';
+  renderRegs();
+  showOk('reg-ok');
+}
+
+async function renderCourses() {
+  var list = await DB.courses.list();
+  var html = '';
+  list.forEach(function(c){
+    html += '<div class="course-item"><div class="ci-icon">'+c.icon+'</div><div style="flex:1"><div class="ri-txt" style="font-weight:500">'+escHtml(c.title)+'</div><div class="ri-sub">'+escHtml(c.cat)+' · '+c.completions+' completions</div></div></div>';
+  });
+  document.getElementById('co-list').innerHTML = html;
+}
+
+async function addCourse() {
+  var t = document.getElementById('co-title').value.trim();
+  var cat = document.getElementById('co-cat').value;
+  var b = document.getElementById('co-body').value.trim();
+  if(!t||!b){alert('Please add a title and content');return;}
+  var icons={health:'🏥',posture:'🪑',fire:'🔥',mental:'🧠',wellbeing:'💚',general:'📖'};
+  await DB.courses.add(icons[cat]||'📖', t, cat, b);
+  document.getElementById('co-title').value='';
+  document.getElementById('co-body').value='';
+  renderCourses();
+  showOk('co-ok');
+}
+
+function createChallenge() {
+  var n = document.getElementById('ch-name').value.trim();
+  if(!n){alert('Please enter a challenge name');return;}
+  document.getElementById('ch-name').value='';
+  document.getElementById('ch-goal').value='';
+  document.getElementById('ch-date').value='';
+  showOk('ch-ok');
+}
+
+function renderAddons() {
+  var html = '';
+  addons.forEach(function(a,i){
+    html += '<div class="card" style="display:flex;align-items:center;gap:12px">';
+    html += '<div style="font-size:24px">'+a.icon+'</div>';
+    html += '<div style="flex:1"><div style="font-size:14px;font-weight:600;margin-bottom:3px">'+a.name+'</div><div style="font-size:12px;color:#64748b;margin-bottom:4px">'+a.desc+'</div><div style="font-size:12px;font-weight:600;color:#7c3aed">'+a.price+'</div></div>';
+    html += '<span class="addon-on">Enabled</span></div>';
+  });
+  document.getElementById('addon-cards').innerHTML = html;
+}
+
+var mgrCalYear = new Date().getFullYear();
+var mgrCalMonth = new Date().getMonth();
+var activeDept = 'All';
+
+var deptColours = {
+  'Engineering': '#7c3aed',
+  'Marketing': '#16a34a',
+  'Design': '#0ea5e9',
+  'Sales': '#f59e0b',
+  'Operations': '#ec4899',
+  'HR': '#64748b',
+  'Finance': '#dc2626'
+};
+
+function holTab(tab, btn) {
+  document.getElementById('hol-tab-requests').style.display = tab === 'requests' ? 'block' : 'none';
+  document.getElementById('hol-tab-calendar').style.display = tab === 'calendar' ? 'block' : 'none';
+  document.getElementById('hol-tab-allowance').style.display = tab === 'allowance' ? 'block' : 'none';
+  document.querySelectorAll('.hol-tab').forEach(function(b){ b.classList.remove('on'); });
+  btn.classList.add('on');
+  if (tab === 'calendar') renderMgrCal();
+  if (tab === 'allowance') renderAllowance();
+}
+
+function mgrCalNav(dir) {
+  mgrCalMonth += dir;
+  if (mgrCalMonth > 11) { mgrCalMonth = 0; mgrCalYear++; }
+  if (mgrCalMonth < 0) { mgrCalMonth = 11; mgrCalYear--; }
+  renderMgrCal();
+}
+
+function renderMgrCal() {
+  var monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  var daysInMonth = new Date(mgrCalYear, mgrCalMonth + 1, 0).getDate();
+  var today = new Date();
+  document.getElementById('mgr-cal-title').textContent = monthNames[mgrCalMonth] + ' ' + mgrCalYear;
+
+  // Get unique departments
+  var depts = ['All'];
+  employees.forEach(function(e){ if(e.role && depts.indexOf(e.role) === -1) depts.push(e.role); });
+
+  // Render dept filters
+  var filterHtml = '';
+  depts.forEach(function(d){
+    var col = d === 'All' ? '#7c3aed' : (deptColours[d] || '#64748b');
+    var isOn = activeDept === d;
+    filterHtml += '<button class="dept-filter' + (isOn ? ' on' : '') + '" style="' + (isOn ? 'background:'+col+';' : '') + '" onclick="setDept(\'' + d + '\')">' + d + '</button>';
+  });
+  document.getElementById('dept-filters').innerHTML = filterHtml;
+
+  // Filter employees by dept
+  var filtered = activeDept === 'All' ? employees : employees.filter(function(e){ return e.role === activeDept; });
+
+  // Group by department
+  var groups = {};
+  filtered.forEach(function(e){
+    var dept = e.role || 'General';
+    if (!groups[dept]) groups[dept] = [];
+    groups[dept].push(e);
+  });
+
+  // Build approved holidays lookup: name -> [days in this month]
+  var holMap = {};
+  var pendMap = {};
+  holidays.forEach(function(h){
+    var name = h.name;
+    var s = new Date(h.start.split(' ').reverse().join('-').replace(/(\w+) (\w+) (\w+)/,'$3-$2-$1'));
+    var e = new Date(h.end.split(' ').reverse().join('-').replace(/(\w+) (\w+) (\w+)/,'$3-$2-$1'));
+    // Parse DD Mon YYYY format
+    function parseDate(str) {
+      var months = {Jan:0,Feb:1,Mar:2,Apr:3,May:4,Jun:5,Jul:6,Aug:7,Sep:8,Oct:9,Nov:10,Dec:11};
+      var parts = str.split(' ');
+      return new Date(parseInt(parts[2]), months[parts[1]], parseInt(parts[0]));
+    }
+    var sd = parseDate(h.start);
+    var ed = parseDate(h.end);
+    var map = h.status === 'approved' ? holMap : (h.status === 'pending' ? pendMap : null);
+    if (!map) return;
+    if (!map[name]) map[name] = {};
+    var cur = new Date(sd);
+    while (cur <= ed) {
+      if (cur.getMonth() === mgrCalMonth && cur.getFullYear() === mgrCalYear) {
+        map[name][cur.getDate()] = true;
+      }
+      cur.setDate(cur.getDate() + 1);
+    }
+  });
+
+  // Build grid HTML
+  var days = [];
+  for (var d = 1; d <= daysInMonth; d++) days.push(d);
+
+  var html = '';
+  Object.keys(groups).forEach(function(dept){
+    html += '<div class="dept-section"><div class="dept-title" style="color:' + (deptColours[dept]||'#475569') + '">' + dept + '</div>';
+    html += '<div class="cal-grid" style="grid-template-columns:110px repeat(' + daysInMonth + ',1fr)">';
+
+    // Header row
+    html += '<div class="cal-head" style="text-align:left;padding-left:8px">Employee</div>';
+    days.forEach(function(d){
+      var isToday = d === today.getDate() && mgrCalMonth === today.getMonth() && mgrCalYear === today.getFullYear();
+      var dow = new Date(mgrCalYear, mgrCalMonth, d).getDay();
+      var isWeekend = dow === 0 || dow === 6;
+      var cls = 'cal-head' + (isToday ? ' today-col' : '') + (isWeekend ? ' weekend' : '');
+      html += '<div class="' + cls + '">' + d + '</div>';
+    });
+
+    // Employee rows
+    groups[dept].forEach(function(emp){
+      html += '<div class="cal-name" title="' + escHtml(emp.name) + '">' + escHtml(emp.name.split(' ')[0]) + '</div>';
+      days.forEach(function(d){
+        var isToday = d === today.getDate() && mgrCalMonth === today.getMonth() && mgrCalYear === today.getFullYear();
+        var dow = new Date(mgrCalYear, mgrCalMonth, d).getDay();
+        var isWeekend = dow === 0 || dow === 6;
+        var isOff = holMap[emp.name] && holMap[emp.name][d];
+        var isPend = pendMap[emp.name] && pendMap[emp.name][d];
+        var cls = 'cal-cell';
+        var style = '';
+        if (isOff) { cls += ' off'; style = 'background:' + (deptColours[dept]||'#16a34a') + '22'; }
+        else if (isPend) { cls += ' pending'; }
+        else if (isToday) { cls += ' today-col'; }
+        else if (isWeekend) { cls += ' weekend'; }
+        html += '<div class="' + cls + '" style="' + style + '" title="' + (isOff ? emp.name + ' — approved' : isPend ? emp.name + ' — pending' : '') + '"></div>';
+      });
+    });
+
+    html += '</div></div>';
+  });
+
+  document.getElementById('mgr-cal-grid').innerHTML = html || '<div class="empty">No employees in this department.</div>';
+  document.getElementById('mgr-cal-legend').innerHTML =
+    '<div class="legend-item"><div class="legend-dot" style="background:#dcfce7;border:1px solid #16a34a"></div>Approved</div>' +
+    '<div class="legend-item"><div class="legend-dot" style="background:#fef9c3;border:1px solid #a16207"></div>Pending</div>' +
+    '<div class="legend-item"><div class="legend-dot" style="background:#f8fafc;border:1px solid #e2e8f0"></div>Weekend</div>' +
+    '<div class="legend-item"><div class="legend-dot" style="background:#faf5ff;border:1px solid #ddd6fe"></div>Today</div>';
+}
+
+function setDept(dept) {
+  activeDept = dept;
+  renderMgrCal();
+}
+
+// ============================================
+// CRM — Phase 1 render functions
+// ============================================
+var healthLabel = {green:'Healthy', amber:'Needs attention', red:'At risk'};
+var healthPillCls = {green:'sp-a', amber:'sp-p', red:'sp-d'};
+
+// ============================================
+// Computed customer health score
+// Combines contact recency, overdue tasks,
+// last meeting sentiment, and financial trend
+// into a single live score — not hand-set.
+// ============================================
+function parseDaysAgo(text) {
+  if(!text) return 999;
+  var t = text.toLowerCase();
+  if(t.indexOf('today')>-1 || t.indexOf('1 day')>-1) return 1;
+  var m = t.match(/(\d+)\s*day/);
+  return m ? parseInt(m[1]) : 999;
+}
+
+function getCustomerHealth(cust) {
+  var score = 100;
+
+  // Contact recency
+  var days = parseDaysAgo(cust.lastContact);
+  if(days > 14) score -= 35;
+  else if(days > 5) score -= 15;
+
+  // Overdue / open tasks for this customer
+  var openTasks = tasks.filter(function(t){return t.custId===cust.id && !t.done;});
+  openTasks.forEach(function(t){ score -= t.urgent ? 15 : 5; });
+
+  // Most recent completed meeting sentiment
+  var custMeetings = meetings.filter(function(m){return m.custId===cust.id && m.status==='completed' && typeof m.sentiment==='number';});
+  if(custMeetings.length){
+    var latest = custMeetings[custMeetings.length-1];
+    if(latest.sentiment >= 65) score += 5;
+    else if(latest.sentiment < 40) score -= 25;
+    else score -= 10;
+  }
+
+  // Financial trend signal
+  var intel = externalIntel[cust.id];
+  if(intel){
+    if(intel.financial.trend==='down') score -= 8;
+    else if(intel.financial.trend==='up') score += 5;
+  }
+
+  score = Math.max(0, Math.min(100, score));
+  var key = score >= 70 ? 'green' : score >= 40 ? 'amber' : 'red';
+  return {score: score, key: key};
+}
+
+function switchUser(val) {
+  currentUser = val;
+  // If viewing a customer or meeting that no longer belongs to this user, go back to the list
+  if(activeCustomerId){
+    var c = customers.find(function(x){return String(x.id)===String(activeCustomerId);});
+    if(c && currentUser!=='manager' && c.rep!==currentUser){
+      activeCustomerId = null;
+      pg('customers', document.querySelector('.ni[onclick*=customers]'));
+    }
+  }
+  renderCustomers();
+  renderMeetings();
+  renderTasks();
+  renderCrmAlerts();
+  updateNavBadges();
+}
+
+function updateNavBadges() {
+  var scopedMeetings = currentUser === 'manager' ? meetings : meetings.filter(function(m){return m.rep===currentUser;});
+  var scopedTasks = currentUser === 'manager' ? tasks : tasks.filter(function(t){return t.rep===currentUser;});
+  var meetBadge = document.querySelector('.ni[onclick*=meetings] .nb');
+  var taskBadge = document.querySelector('.ni[onclick*=tasks] .nb');
+  if(meetBadge) meetBadge.textContent = scopedMeetings.filter(function(m){return m.status==='upcoming';}).length;
+  if(taskBadge) taskBadge.textContent = scopedTasks.filter(function(t){return !t.done;}).length;
+
+  // Weekly digest is manager-only intelligence
+  var digestSect = document.getElementById('ns-intelligence');
+  var digestItem = document.getElementById('ni-digest');
+  var showDigest = currentUser === 'manager';
+  if(digestSect) digestSect.style.display = showDigest ? '' : 'none';
+  if(digestItem) digestItem.style.display = showDigest ? '' : 'none';
+  if(!showDigest && document.getElementById('pg-digest').classList.contains('on')){
+    pg('customers', document.querySelector('.ni[onclick*=customers]'));
+  }
+}
+
+function renderDigest() {
+  var healthCounts = {green:0, amber:0, red:0};
+  var attentionList = [];
+  customers.forEach(function(c){
+    var h = getCustomerHealth(c);
+    healthCounts[h.key]++;
+    if(h.key!=='green') attentionList.push({name:c.name, key:h.key, score:h.score, rep:c.rep});
+  });
+  attentionList.sort(function(a,b){return a.score-b.score;});
+
+  var openHolidays = 3; // pending holiday requests, from earlier demo data
+  var moodNow = trendData[trendData.length-1].score;
+  var moodPrev = trendData[trendData.length-2].score;
+  var moodDirection = moodNow > moodPrev ? 'improved' : moodNow < moodPrev ? 'dipped' : 'held steady';
+
+  var repStats = {};
+  meetings.forEach(function(m){
+    if(!repStats[m.rep]) repStats[m.rep] = {meetings:0};
+    if(m.status==='completed') repStats[m.rep].meetings++;
+  });
+  var topRep = Object.keys(repStats).sort(function(a,b){return repStats[b].meetings-repStats[a].meetings;})[0];
+
+  var openTasksCount = tasks.filter(function(t){return !t.done;}).length;
+  var opportunities = customers.length - attentionList.length;
+
+  var html = '<div style="background:white;border:1px solid #e2e8f0;border-radius:14px;padding:1.5rem;max-width:640px">';
+  html += '<div style="font-size:11px;color:#94a3b8;margin-bottom:4px">To: bengraybaikie@hotmail.com</div>';
+  html += '<div style="font-size:15px;font-weight:600;margin-bottom:2px">Your Superb weekly digest — Monday 30 June 2026</div>';
+  html += '<div style="font-size:12px;color:#94a3b8;margin-bottom:1.25rem;padding-bottom:1.25rem;border-bottom:1px solid #f1f5f9">Everything that happened across your team and your customers this week, in one place.</div>';
+
+  html += '<div style="font-size:13px;font-weight:600;color:#16a34a;margin-bottom:8px">💚 Team wellbeing</div>';
+  html += '<div style="font-size:13px;color:#334155;line-height:1.8;margin-bottom:1.25rem">Team mood '+moodDirection+' this week to '+moodNow.toFixed(1)+'/5. '+openHolidays+' holiday requests are waiting on your approval. No urgent wellbeing alerts to flag right now.</div>';
+
+  html += '<div style="font-size:13px;font-weight:600;color:#7c3aed;margin-bottom:8px">🤝 Customer relationships</div>';
+  html += '<div style="font-size:13px;color:#334155;line-height:1.8;margin-bottom:.6rem">'+healthCounts.green+' customers healthy, '+healthCounts.amber+' need attention, '+healthCounts.red+' at risk. '+topRep+' had the most customer contact this week. '+openTasksCount+' tasks are currently open across the team.</div>';
+
+  if(attentionList.length){
+    html += '<div style="background:#fafafa;border-radius:8px;padding:.75rem 1rem;margin-bottom:1.25rem">';
+    attentionList.forEach(function(a){
+      var dotCol = a.key==='red' ? '#dc2626' : '#a16207';
+      html += '<div style="display:flex;align-items:center;gap:8px;font-size:12px;color:#334155;padding:3px 0"><div style="width:7px;height:7px;border-radius:50%;background:'+dotCol+'"></div><b>'+escHtml(a.name)+'</b> ('+escHtml(a.rep)+') — score '+a.score+'/100</div>';
+    });
+    html += '</div>';
+  }
+
+  html += '<div style="font-size:11px;color:#7c3aed;background:#faf5ff;border-radius:8px;padding:10px 12px">✨ <b>AI take:</b> Overall a stable week. The main thing worth your attention is Acme Ltd, which has had no contact in over two weeks — worth checking Sarah has that follow-up scheduled.</div>';
+
+  html += '</div>';
+  document.getElementById('digest-preview').innerHTML = html;
+}
+
+async function renderCustomers() {
+  customers = await DB.customers.list(); // keeps every other reader of the global `customers` array (getCustomerHealth, alerts, digest) correct without touching each of them individually
+  var visible = currentUser === 'manager' ? customers : customers.filter(function(c){return c.rep===currentUser;});
+  var healthMap = {};
+  visible.forEach(function(c){ healthMap[c.id] = getCustomerHealth(c); });
+
+  document.getElementById('cust-total').textContent = visible.length;
+  document.getElementById('cust-attention').textContent = visible.filter(function(c){return healthMap[c.id].key==='amber';}).length;
+  document.getElementById('cust-risk').textContent = visible.filter(function(c){return healthMap[c.id].key==='red';}).length;
+  var visibleIds = visible.map(function(c){return c.id;});
+  document.getElementById('cust-opps').textContent = tasks.filter(function(t){return !t.done && visibleIds.indexOf(t.custId)>-1;}).length;
+
+  var q = document.getElementById('cust-search').value.trim().toLowerCase();
+  var filtered = visible.filter(function(c){
+    if(!q) return true;
+    return c.name.toLowerCase().indexOf(q)>-1 || c.rep.toLowerCase().indexOf(q)>-1 || c.sector.toLowerCase().indexOf(q)>-1;
+  });
+
+  var html = '';
+  filtered.forEach(function(c){
+    var h = healthMap[c.id];
+    var initials = c.name.split(' ').map(function(w){return w[0];}).slice(0,2).join('');
+    html += '<div class="cust-row" onclick="openCustomer(\''+c.id+'\')">';
+    html += '<div class="cust-avatar">'+initials+'</div>';
+    html += '<div style="flex:1"><div class="cust-name">'+escHtml(c.name)+'</div><div class="cust-sub">'+escHtml(c.sector)+' · '+escHtml(c.location)+' · rep: '+escHtml(c.rep)+'</div></div>';
+    html += '<div style="text-align:right"><div style="font-size:12px;font-weight:600;color:#0f172a">£'+c.mrr+'/mo</div><div class="cust-sub">last contact '+escHtml(c.lastContact)+'</div></div>';
+    html += '<span class="sp '+healthPillCls[h.key]+'" style="margin-left:8px;flex-shrink:0" title="Health score: '+h.score+'/100">'+healthLabel[h.key]+' · '+h.score+'</span>';
+    html += '</div>';
+  });
+  if(!html) html = '<div class="empty">'+(currentUser==='manager'?'No customers match your search.':'You have no customers matching this search.')+'</div>';
+  document.getElementById('cust-list').innerHTML = html;
+}
+
+function openCustomer(id) {
+  activeCustomerId = id;
+  renderCustomerDetail();
+  pg('customer-detail', null);
+}
+
+async function renderCustomerDetail() {
+  var c = customers.find(function(x){return String(x.id)===String(activeCustomerId);});
+  if(!c) return;
+  var initials = c.name.split(' ').map(function(w){return w[0];}).slice(0,2).join('');
+  var notes = await DB.customers.notes(c.id);
+  var timeline = await DB.customers.timeline(c.id);
+  var custTasks = tasks.filter(function(t){return t.custId===c.id && !t.done;});
+  var h = getCustomerHealth(c);
+
+  var html = '';
+  html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem">';
+  html += '<div style="display:flex;align-items:center;gap:12px">';
+  html += '<div class="cust-avatar" style="width:44px;height:44px;font-size:14px">'+initials+'</div>';
+  html += '<div><div style="font-size:16px;font-weight:600">'+escHtml(c.name)+'</div><div class="cust-sub">'+escHtml(c.sector)+' · '+escHtml(c.location)+' · customer since '+escHtml(c.since)+'</div></div>';
+  html += '<span class="sp '+healthPillCls[h.key]+'" style="margin-left:8px" title="Computed live from contact recency, sentiment, tasks, and financial signals">'+healthLabel[h.key]+' · '+h.score+'/100</span>';
+  html += '</div>';
+  html += '<div style="display:flex;gap:8px"><button class="btn btn-o" onclick="openScheduler(\''+c.id+'\')">📅 Schedule meeting</button><button class="btn btn-g" onclick="showAddNote(\''+c.id+'\')">➕ Add note</button></div>';
+  html += '</div>';
+
+  html += '<div class="stat-mini-row">';
+  html += '<div class="stat-mini"><div class="stat-mini-l">Account rep</div><div class="stat-mini-v">'+escHtml(c.rep)+'</div></div>';
+  html += '<div class="stat-mini"><div class="stat-mini-l">Last contact</div><div class="stat-mini-v">'+escHtml(c.lastContact)+'</div></div>';
+  html += '<div class="stat-mini"><div class="stat-mini-l">Monthly value</div><div class="stat-mini-v">£'+c.mrr+'/mo</div></div>';
+  html += '<div class="stat-mini"><div class="stat-mini-l">Open tasks</div><div class="stat-mini-v">'+custTasks.length+'</div></div>';
+  html += '</div>';
+
+  html += '<div class="ai-box"><div class="ai-box-h">✨ AI customer summary</div><div class="ai-box-t">'+escHtml(c.summary)+'</div></div>';
+
+  html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:.875rem">';
+
+  html += '<div>';
+  html += '<div class="card"><div class="ct">🕐 Activity timeline</div>';
+  if(timeline.length){
+    timeline.forEach(function(t){
+      var dotCol = t.type==='meeting' ? '#7c3aed' : t.type==='note' ? '#1d4ed8' : '#16a34a';
+      html += '<div class="ri"><div class="health-dot" style="background:'+dotCol+';margin-top:5px"></div><div><div class="ri-txt">'+escHtml(t.text)+'</div><div class="ri-sub">'+escHtml(t.sub)+'</div></div></div>';
+    });
+  } else { html += '<div class="empty">No activity yet.</div>'; }
+  html += '</div>';
+
+  html += '<div class="card"><div class="ct">📝 Notes</div><div id="cust-notes-list">';
+  if(notes.length){
+    notes.forEach(function(n){
+      html += '<div class="ri"><div><div class="ri-txt">'+escHtml(n.text)+'</div><div class="ri-sub">'+escHtml(n.author)+' · '+escHtml(n.date)+'</div></div></div>';
+    });
+  } else { html += '<div class="empty">No notes yet.</div>'; }
+  html += '</div>';
+  html += '<div id="add-note-box" style="display:none;margin-top:8px"><div class="reply-input-row"><input type="text" id="new-note-input" placeholder="Write a note about this customer..."><button class="btn btn-p" onclick="saveNote(\''+c.id+'\')">Save</button></div></div>';
+  html += '</div>';
+  html += '</div>'; // end left col
+
+  html += '<div>';
+  html += '<div class="card"><div class="ct">📅 Meetings</div>';
+  var custMeetings = meetings.filter(function(m){return m.custId===c.id;});
+  if(custMeetings.length){
+    custMeetings.forEach(function(m){
+      html += '<div class="ri" style="justify-content:space-between;cursor:pointer" onclick="openMeeting(\''+m.id+'\')"><div><div class="ri-txt">'+escHtml(m.purpose)+'</div><div class="ri-sub">'+escHtml(m.date)+' at '+escHtml(m.time)+' · '+formatLabel[m.format]+'</div></div><span class="sp '+(m.status==='upcoming'?'sp-purple':'sp-a')+'">'+escHtml(m.status)+'</span></div>';
+    });
+  } else { html += '<div class="empty">No meetings logged yet.</div>'; }
+  html += '</div>';
+
+  html += '<div class="card"><div class="ct">✅ Open tasks</div>';
+  if(custTasks.length){
+    custTasks.forEach(function(t){
+      html += '<div class="ri" style="justify-content:space-between"><div><div class="ri-txt">'+escHtml(t.text)+'</div><div class="ri-sub">'+escHtml(t.rep)+'</div></div>'+(t.urgent?'<span class="sp sp-d">due '+escHtml(t.due)+'</span>':'<span class="sp sp-p">due '+escHtml(t.due)+'</span>')+'</div>';
+    });
+  } else { html += '<div class="empty">No open tasks for this customer.</div>'; }
+  html += '</div>';
+  html += '</div>'; // end right col
+
+  html += '</div>'; // end grid
+
+  document.getElementById('cust-detail-body').innerHTML = html;
+}
+
+function showAddNote(custId) {
+  document.getElementById('add-note-box').style.display = 'block';
+  document.getElementById('new-note-input').focus();
+}
+
+async function saveNote(custId) {
+  var input = document.getElementById('new-note-input');
+  var text = input.value.trim();
+  if(!text){ alert('Please write a note first'); return; }
+  await DB.customers.addNote(custId, text);
+  renderCustomerDetail();
+}
+
+function taskTab(tab, btn) {
+  document.getElementById('task-tab-open').style.display = tab==='open' ? 'block' : 'none';
+  document.getElementById('task-tab-done').style.display = tab==='done' ? 'block' : 'none';
+  document.querySelectorAll('#pg-tasks .hol-tab').forEach(function(b){b.classList.remove('on');});
+  btn.classList.add('on');
+}
+
+async function renderTasks() {
+  tasks = await DB.tasks.list();
+  var scoped = currentUser === 'manager' ? tasks : tasks.filter(function(t){return t.rep===currentUser;});
+  var open = scoped.filter(function(t){return !t.done;});
+  var done = scoped.filter(function(t){return t.done;});
+
+  var openHtml = '';
+  open.forEach(function(t){
+    openHtml += '<div class="ri" style="justify-content:space-between">';
+    openHtml += '<div style="display:flex;align-items:center;gap:10px"><div class="task-check" data-id="'+t.id+'" onclick="completeTask(this)">✓</div>';
+    openHtml += '<div><div class="ri-txt">'+escHtml(t.text)+'</div><div class="ri-sub">'+escHtml(t.custName)+' · '+escHtml(t.rep)+'</div></div></div>';
+    openHtml += '<span class="sp '+(t.urgent?'sp-d':'sp-p')+'">due '+escHtml(t.due)+'</span>';
+    openHtml += '</div>';
+  });
+  document.getElementById('task-list-open').innerHTML = openHtml || '<div class="empty">No open tasks — nice work.</div>';
+
+  var doneHtml = '';
+  done.forEach(function(t){
+    doneHtml += '<div class="ri" style="justify-content:space-between;opacity:.6">';
+    doneHtml += '<div style="display:flex;align-items:center;gap:10px"><div class="task-check checked">✓</div>';
+    doneHtml += '<div><div class="ri-txt" style="text-decoration:line-through">'+escHtml(t.text)+'</div><div class="ri-sub">'+escHtml(t.custName)+' · '+escHtml(t.rep)+'</div></div></div>';
+    doneHtml += '</div>';
+  });
+  document.getElementById('task-list-done').innerHTML = doneHtml || '<div class="empty">No completed tasks yet.</div>';
+}
+
+async function completeTask(el) {
+  var id = SUPERB_CONFIG.DEMO_MODE ? parseInt(el.getAttribute('data-id')) : el.getAttribute('data-id');
+  await DB.tasks.complete(id);
+  renderTasks();
+  renderCustomers();
+  renderCrmAlerts();
+  updateNavBadges();
+}
+
+// ============================================
+// CRM — Phase 2 meeting functions
+// ============================================
+var formatLabel = {video:'📹 Video call', inperson:'🤝 In person'};
+
+function meetTab(tab, btn) {
+  document.getElementById('meet-tab-upcoming').style.display = tab==='upcoming' ? 'block' : 'none';
+  document.getElementById('meet-tab-past').style.display = tab==='past' ? 'block' : 'none';
+  document.querySelectorAll('#pg-meetings .hol-tab').forEach(function(b){b.classList.remove('on');});
+  btn.classList.add('on');
+}
+
+async function renderMeetings() {
+  meetings = await DB.meetings.list(); // keeps other readers of the global `meetings` array (getCustomerHealth, digest) correct
+  var scoped = currentUser === 'manager' ? meetings : meetings.filter(function(m){return m.rep===currentUser;});
+  var upcoming = scoped.filter(function(m){return m.status==='upcoming';});
+  var past = scoped.filter(function(m){return m.status==='completed';});
+
+  var upHtml = '';
+  upcoming.forEach(function(m){
+    upHtml += '<div class="ri" style="justify-content:space-between;cursor:pointer" onclick="openMeeting(\''+m.id+'\')">';
+    upHtml += '<div><div class="ri-txt" style="font-weight:600">'+escHtml(m.custName)+' — '+escHtml(m.purpose)+'</div><div class="ri-sub">'+escHtml(m.date)+' at '+escHtml(m.time)+' · '+escHtml(m.rep)+' · '+formatLabel[m.format]+'</div></div>';
+    upHtml += '<span class="sp sp-purple">upcoming</span>';
+    upHtml += '</div>';
+  });
+  document.getElementById('meet-list-upcoming').innerHTML = upHtml || '<div class="empty">No upcoming meetings scheduled.</div>';
+
+  var pastHtml = '';
+  past.forEach(function(m){
+    pastHtml += '<div class="ri" style="justify-content:space-between;cursor:pointer" onclick="openMeeting(\''+m.id+'\')">';
+    pastHtml += '<div><div class="ri-txt" style="font-weight:600">'+escHtml(m.custName)+' — '+escHtml(m.purpose)+'</div><div class="ri-sub">'+escHtml(m.date)+' at '+escHtml(m.time)+' · '+escHtml(m.rep)+' · '+formatLabel[m.format]+'</div></div>';
+    pastHtml += '<span class="sp sp-a">completed</span>';
+    pastHtml += '</div>';
+  });
+  document.getElementById('meet-list-past').innerHTML = pastHtml || '<div class="empty">No past meetings yet.</div>';
+}
+
+function openMeeting(id) {
+  activeMeetingId = id;
+  renderMeetingDetail();
+  pg('meeting-detail', null);
+}
+
+var meetingUiState = {}; // {[meetingId]: {phase:'live'|'processing'|'summary', liveNotes, aiSummary}}
+
+function renderMeetingDetail() {
+  var m = meetings.find(function(x){return String(x.id)===String(activeMeetingId);});
+  if(!m) return;
+  var isUpcoming = m.status === 'upcoming';
+  var state = meetingUiState[m.id];
+
+  var html = '';
+  html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem">';
+  html += '<div><div style="font-size:16px;font-weight:600">'+escHtml(m.custName)+' — '+escHtml(m.purpose)+'</div>';
+  html += '<div class="cust-sub">'+escHtml(m.date)+' at '+escHtml(m.time)+' · '+escHtml(m.rep)+' · '+formatLabel[m.format]+'</div></div>';
+  var statusLabel = state && state.phase==='live' ? 'in progress' : state && state.phase==='processing' ? 'processing' : state && state.phase==='summary' ? 'awaiting approval' : (isUpcoming?'upcoming':'completed');
+  var statusCls = state ? 'sp-purple' : (isUpcoming?'sp-purple':'sp-a');
+  html += '<span class="sp '+statusCls+'">'+statusLabel+'</span>';
+  html += '</div>';
+
+  if(state && state.phase==='live'){
+    html += renderLiveMeeting(m, state);
+  } else if(state && state.phase==='processing'){
+    html += '<div class="card"><div class="ai-loading-box"><div class="ai-loading-spin"></div><div style="font-size:13px;font-weight:500;color:#334155">AI is generating your meeting summary...</div><div style="font-size:11px;color:#94a3b8;margin-top:4px">Picking out key points, sentiment, and action items</div></div></div>';
+  } else if(state && state.phase==='summary'){
+    html += renderAiSummaryApproval(m, state);
+  } else if(isUpcoming){
+    html += renderUpcomingBriefing(m);
+  } else {
+    html += renderCompletedMeeting(m);
+  }
+
+  document.getElementById('meet-detail-body').innerHTML = html;
+}
+
+function renderUpcomingBriefing(m) {
+  var cust = customers.find(function(c){return c.id===m.custId;});
+  var html = '';
+  html += '<div class="ai-box"><div class="ai-box-h">✨ AI prep notes for '+escHtml(m.rep)+'</div><div class="ai-box-t">'+escHtml(generateAiPrepNotes(cust))+'</div></div>';
+
+  var intel = externalIntel[m.custId];
+  if(intel){
+    html += '<div class="card"><div class="ct">🌐 External intelligence <span style="font-weight:400;color:#94a3b8;font-size:10px">— gathered '+escHtml(intel.scannedDate)+'</span></div>';
+    html += '<div class="ai-section-lbl">News mentions</div>';
+    if(intel.news.length){
+      intel.news.forEach(function(n){ html += '<div class="ai-section-item">📰 '+escHtml(n.headline)+' <span style="color:#94a3b8">— '+escHtml(n.source)+', '+escHtml(n.date)+'</span></div>'; });
+    } else { html += '<div class="ai-section-item" style="color:#94a3b8">Nothing found this week</div>'; }
+    html += '<div class="ai-section-lbl">Social signal</div><div class="ai-section-item">💬 '+escHtml(intel.social)+'</div>';
+    html += '<div class="ai-section-lbl">Financial trend — Companies House</div>';
+    var trendIcon = intel.financial.trend==='up' ? '📈' : intel.financial.trend==='down' ? '📉' : '➖';
+    html += '<div class="ai-section-item">'+trendIcon+' '+escHtml(intel.financial.detail)+'</div>';
+    html += '<div style="font-size:11px;color:#7c3aed;background:#faf5ff;border-radius:7px;padding:7px 9px;margin-top:6px"><b>AI estimate:</b> '+escHtml(intel.financial.estimate)+'</div>';
+    html += '</div>';
+  }
+
+  if(m.managerNote){
+    html += '<div class="card" style="background:#fffbeb;border-color:#fde68a"><div class="ct">📌 Note from your manager</div><div style="font-size:12px;color:#334155;line-height:1.7">'+escHtml(m.managerNote)+'</div></div>';
+  }
+  if(m.deckName){
+    html += '<div class="card"><div class="ct">📎 Attached presentation</div><div class="ri"><div style="width:32px;height:32px;border-radius:8px;background:#fef2f2;color:#dc2626;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0">📊</div><div><div class="ri-txt">'+escHtml(m.deckName)+'</div><div class="ri-sub">Ready to present during this call</div></div></div></div>';
+  }
+  if(m.format==='video'){
+    html += '<div class="card"><div class="ct">📹 Video call</div><div style="font-size:12px;color:#64748b;margin-bottom:.75rem">This meeting hasn\'t started yet. Starting it will notify '+escHtml(m.custName)+' that the call is beginning.</div><button class="btn btn-g" onclick="startMeeting(\''+m.id+'\')">▶ Start meeting</button></div>';
+    if(m.joinLink){
+      html += '<div class="card"><div class="ct">🔗 Customer join link</div><div style="font-size:11px;color:#64748b;margin-bottom:.6rem">'+escHtml(m.custEmail || 'No email added')+' — this link is sent automatically and needs no login or download on their side.</div>';
+      html += '<div style="display:flex;gap:6px"><input type="text" readonly value="'+escHtml(m.joinLink)+'" style="flex:1;padding:7px 10px;border:1px solid #e2e8f0;border-radius:7px;font-size:11px;color:#475569;background:#f8fafc"><button class="btn btn-o" onclick="navigator.clipboard.writeText(\''+escHtml(m.joinLink)+'\');this.textContent=\'Copied ✓\'">Copy</button></div></div>';
+    }
+  } else {
+    html += '<div class="card"><div class="ct">🤝 In person</div><div style="font-size:12px;color:#64748b;margin-bottom:.75rem">Start this when the meeting begins to take live notes.</div><button class="btn btn-g" onclick="startMeeting(\''+m.id+'\')">▶ Start meeting</button></div>';
+  }
+  html += '<div class="card"><div class="ct">ℹ️ Before you begin</div><div style="font-size:11px;color:#64748b;line-height:1.7">All participants must be informed this meeting is being recorded and transcribed before it starts. Superb shows this notice automatically once the call begins.</div></div>';
+  return html;
+}
+
+function renderLiveMeeting(m, state) {
+  var html = '';
+  html += '<div class="rec-indicator"><div class="rec-dot"></div>Recording · all participants have been notified</div>';
+  html += '<div class="card"><div class="ct">🎙️ Live transcription</div><div style="font-size:11px;color:#94a3b8;font-style:italic">Transcription running in the background — you\'ll see the full transcript once the meeting ends.</div></div>';
+  html += '<div class="card"><div class="ct">📝 Notes</div><textarea id="live-notes-input" placeholder="Add notes as the meeting happens — optional, the AI summary will pick up the rest from the transcript">'+escHtml(state.liveNotes||'')+'</textarea></div>';
+  html += '<button class="btn btn-r btn-full" onclick="endMeeting(\''+m.id+'\')">■ End meeting</button>';
+  return html;
+}
+
+function renderAiSummaryApproval(m, state) {
+  var s = state.aiSummary;
+  var html = '';
+  html += '<div class="ai-box"><div class="ai-box-h">✨ AI summary — review before saving</div>';
+  html += '<textarea id="ai-summary-edit" style="width:100%;min-height:90px;border:1px solid #e9d5ff;border-radius:8px;padding:10px;font-size:12px;font-family:inherit;color:#334155;background:white">'+escHtml(s.summaryText)+'</textarea>';
+  html += '</div>';
+
+  html += '<div class="card"><div class="ct">😊 Customer sentiment</div>';
+  html += '<div style="display:flex;align-items:center;gap:10px"><div class="sentiment-track"><div class="sentiment-fill" style="width:'+s.sentiment+'%;background:'+(s.sentiment>=65?'#16a34a':s.sentiment>=40?'#a16207':'#dc2626')+'"></div></div><span style="font-size:12px;font-weight:600;color:'+(s.sentiment>=65?'#16a34a':s.sentiment>=40?'#a16207':'#dc2626')+'">'+(s.sentiment>=65?'Positive':s.sentiment>=40?'Mixed':'Negative')+' — '+s.sentiment+'%</span></div>';
+  html += '</div>';
+
+  html += '<div class="card"><div class="ct">💡 Key points</div>';
+  html += '<div class="ai-section-lbl">Concerns raised</div>';
+  s.concerns.forEach(function(c){ html += '<div class="ai-section-item">⚠️ '+escHtml(c)+'</div>'; });
+  if(!s.concerns.length) html += '<div class="ai-section-item" style="color:#94a3b8">None raised</div>';
+  html += '<div class="ai-section-lbl">Opportunities</div>';
+  s.opportunities.forEach(function(o){ html += '<div class="ai-section-item">📈 '+escHtml(o)+'</div>'; });
+  if(!s.opportunities.length) html += '<div class="ai-section-item" style="color:#94a3b8">None identified</div>';
+  html += '<div class="ai-section-lbl">Decisions made</div>';
+  s.decisions.forEach(function(d){ html += '<div class="ai-section-item">✅ '+escHtml(d)+'</div>'; });
+  if(!s.decisions.length) html += '<div class="ai-section-item" style="color:#94a3b8">None recorded</div>';
+  html += '</div>';
+
+  html += '<div class="card"><div class="ct">✅ Action items — created automatically on approval</div>';
+  s.actionItems.forEach(function(a, i){
+    html += '<div class="ri" style="justify-content:space-between"><div class="row-txt" style="font-size:12px">'+escHtml(a.text)+'</div><span class="sp '+(a.urgent?'sp-d':'sp-p')+'">'+escHtml(a.rep)+' · '+escHtml(a.due)+'</span></div>';
+  });
+  html += '</div>';
+
+  html += '<div style="display:flex;gap:8px"><button class="btn btn-o" onclick="discardSummary(\''+m.id+'\')">Discard</button><button class="btn btn-g" style="flex:1" onclick="approveSummary(\''+m.id+'\')">✓ Approve and save to customer record</button></div>';
+  return html;
+}
+
+function renderCompletedMeeting(m) {
+  var html = '';
+  if(typeof m.sentiment === 'number'){
+    html += '<div class="card"><div class="ct">😊 Customer sentiment</div><div style="display:flex;align-items:center;gap:10px"><div class="sentiment-track"><div class="sentiment-fill" style="width:'+m.sentiment+'%;background:'+(m.sentiment>=65?'#16a34a':m.sentiment>=40?'#a16207':'#dc2626')+'"></div></div><span style="font-size:12px;font-weight:600;color:'+(m.sentiment>=65?'#16a34a':m.sentiment>=40?'#a16207':'#dc2626')+'">'+(m.sentiment>=65?'Positive':m.sentiment>=40?'Mixed':'Negative')+' — '+m.sentiment+'%</span></div></div>';
+  }
+  html += '<div class="card"><div class="ct">📝 Meeting summary</div><div style="font-size:12px;color:#334155;line-height:1.7;white-space:pre-wrap">'+escHtml(m.notes || 'No notes were recorded for this meeting.')+'</div></div>';
+  return html;
+}
+
+function generateAiPrepNotes(cust) {
+  if(!cust) return 'No customer history available yet.';
+  var notes = custNotes[cust.id] || [];
+  var latest = notes[0];
+  var h = getCustomerHealth(cust);
+  var base = cust.name+' has been a customer since '+cust.since+' and is currently rated as '+healthLabel[h.key].toLowerCase()+' ('+h.score+'/100). Last contact was '+cust.lastContact+'.';
+  if(latest) base += ' Most recent note: "'+latest.text+'"';
+  base += ' Suggested focus for this meeting: ' + (h.key==='red' ? 're-engage and address any open concerns directly.' : h.key==='amber' ? 'resolve the outstanding issue before it affects renewal.' : 'maintain momentum and look for expansion opportunities.');
+  return base;
+}
+
+function startMeeting(id) {
+  meetingUiState[id] = {phase:'live', liveNotes:''};
+  renderMeetingDetail();
+}
+
+function endMeeting(id) {
+  var m = meetings.find(function(x){return String(x.id)===String(id);});
+  var state = meetingUiState[id];
+  if(!m || !state) return;
+  var liveNotesInput = document.getElementById('live-notes-input');
+  state.liveNotes = liveNotesInput ? liveNotesInput.value : '';
+  state.phase = 'processing';
+  renderMeetingDetail();
+  setTimeout(function(){
+    state.aiSummary = generateAiSummary(m, state.liveNotes);
+    state.phase = 'summary';
+    renderMeetingDetail();
+  }, 1400);
+}
+
+function generateAiSummary(m, liveNotes) {
+  var cust = customers.find(function(c){return c.id===m.custId;});
+  var health = cust ? getCustomerHealth(cust).key : 'green';
+  var templates = {
+    green: {
+      text: 'The meeting was positive overall. '+m.custName+' confirmed things are going well with no major concerns raised. There was interest in expanding usage, and the conversation ended with a clear next step agreed.',
+      sentiment: 82,
+      concerns: [],
+      opportunities: ['Potential to expand usage or add further seats'],
+      decisions: ['Agreed next step confirmed with the customer']
+    },
+    amber: {
+      text: 'The meeting covered an open concern that has not yet been fully resolved. '+m.custName+' remains engaged overall but wants clarity before things move forward. A follow-up was agreed to close this out.',
+      sentiment: 54,
+      concerns: ['Outstanding concern raised — needs a clear resolution'],
+      opportunities: ['Relationship remains strong if the concern is addressed promptly'],
+      decisions: ['Follow-up call agreed to resolve the open issue']
+    },
+    red: {
+      text: 'This was an important re-engagement conversation with '+m.custName+' after a period of limited contact. Some frustration came through, but the customer was willing to talk it through. Trust needs to be rebuilt with prompt follow-through on what was promised.',
+      sentiment: 31,
+      concerns: ['Customer expressed frustration about lack of recent contact', 'Risk of churn if not addressed quickly'],
+      opportunities: [],
+      decisions: ['Rep committed to a clear recovery plan with specific dates']
+    }
+  };
+  var t = templates[health];
+  var summaryText = t.text;
+  if(liveNotes && liveNotes.trim()){
+    summaryText += ' Rep notes from the call: "'+liveNotes.trim()+'"';
+  }
+  var actionItems = [];
+  if(health==='red'){
+    actionItems.push({text:'Send recovery plan with specific commitments', rep:m.rep, due:'Tomorrow', urgent:true});
+    actionItems.push({text:'Schedule a follow-up call within 7 days', rep:m.rep, due:'This week', urgent:true});
+  } else if(health==='amber'){
+    actionItems.push({text:'Resolve the outstanding concern raised in this meeting', rep:m.rep, due:'This week', urgent:false});
+  } else {
+    actionItems.push({text:'Follow up on expansion interest', rep:m.rep, due:'Next week', urgent:false});
+  }
+  return {summaryText:summaryText, sentiment:t.sentiment, concerns:t.concerns, opportunities:t.opportunities, decisions:t.decisions, actionItems:actionItems};
+}
+
+function discardSummary(id) {
+  if(!confirm('Discard this AI summary? The meeting will go back to upcoming and nothing will be saved.')) return;
+  delete meetingUiState[id];
+  renderMeetingDetail();
+}
+
+function approveSummary(id) {
+  var m = meetings.find(function(x){return String(x.id)===String(id);});
+  var state = meetingUiState[id];
+  if(!m || !state) return;
+  var editedText = document.getElementById('ai-summary-edit').value;
+  var s = state.aiSummary;
+
+  m.status = 'completed';
+  m.notes = editedText;
+  m.sentiment = s.sentiment;
+
+  // Create tasks from action items
+  s.actionItems.forEach(function(a){
+    var newTaskId = (tasks.length ? Math.max.apply(null, tasks.map(function(t){return t.id;})) : 0) + 1;
+    tasks.push({id:newTaskId, custId:m.custId, custName:m.custName, text:a.text, rep:a.rep, due:a.due, urgent:a.urgent, done:false});
+  });
+
+  // Update timeline and customer AI summary
+  if(!custTimeline[m.custId]) custTimeline[m.custId] = [];
+  custTimeline[m.custId].unshift({type:'meeting', text:'Meeting — '+m.purpose+' · '+m.rep+' · AI summary approved', sub:m.date+' · sentiment '+s.sentiment+'%'});
+  var cust = customers.find(function(c){return c.id===m.custId;});
+  if(cust) cust.summary = editedText;
+
+  delete meetingUiState[id];
+  renderMeetingDetail();
+  renderMeetings();
+  renderTasks();
+  renderCustomers();
+  renderCrmAlerts();
+  updateNavBadges();
+  if(activeCustomerId === m.custId) renderCustomerDetail();
+}
+
+function openScheduler(custId) {
+  var select = document.getElementById('sched-customer');
+  select.innerHTML = customers.map(function(c){return '<option value="'+c.id+'">'+escHtml(c.name)+'</option>';}).join('');
+  if(custId) select.value = custId;
+  document.getElementById('scheduler-overlay').style.display = 'flex';
+}
+
+function closeScheduler() {
+  document.getElementById('scheduler-overlay').style.display = 'none';
+}
+
+function saveScheduledMeeting() {
+  var custId = parseInt(document.getElementById('sched-customer').value);
+  var purpose = document.getElementById('sched-purpose').value;
+  var format = document.getElementById('sched-format').value;
+  var date = document.getElementById('sched-date').value;
+  var time = document.getElementById('sched-time').value;
+  var rep = document.getElementById('sched-rep').value;
+  var custEmail = document.getElementById('sched-cust-email').value.trim();
+  var deckFile = document.getElementById('sched-deck').files[0];
+  var managerNote = document.getElementById('sched-manager-note').value.trim();
+
+  if(!date || !time){ alert('Please choose a date and time'); return; }
+
+  var cust = customers.find(function(c){return c.id===custId;});
+  var newId = Math.max.apply(null, meetings.map(function(m){return m.id;})) + 1;
+  var displayDate = new Date(date).toLocaleDateString('en-GB', {day:'numeric', month:'short', year:'numeric'});
+  var joinCode = Math.random().toString(36).substring(2, 8);
+
+  meetings.push({
+    id: newId, custId: custId, custName: cust.name, rep: rep, purpose: purpose,
+    format: format, date: displayDate, time: time, status: 'upcoming', notes: '',
+    custEmail: custEmail, deckName: deckFile ? deckFile.name : null,
+    managerNote: managerNote, joinLink: 'meet.superbwellness.co.uk/m/' + joinCode
+  });
+
+  closeScheduler();
+  document.getElementById('sched-cust-email').value = '';
+  document.getElementById('sched-deck').value = '';
+  document.getElementById('sched-manager-note').value = '';
+  renderMeetings();
+  if(activeCustomerId === custId) renderCustomerDetail();
+  pg('meetings', document.querySelector('.ni[onclick*=meetings]'));
+}
+
+async function initApp() {
+  var ok = await resolveSession();
+  if (!ok) return; // resolveSession already redirected to portal.html
+
+  if (!SUPERB_CONFIG.DEMO_MODE) {
+    document.getElementById('demo-bar').style.display = 'none';
+    var subEl = document.querySelector('.pg-sub'); // dashboard subtitle, first match
+    if (subEl) subEl.textContent = SESSION.companyName + ' · ' + new Date().toLocaleDateString('en-GB', {weekday:'long', day:'numeric', month:'long', year:'numeric'});
+    var titleEl = document.querySelector('.pg-title');
+    if (titleEl) titleEl.textContent = 'Good morning, ' + (SESSION.managerName || 'there') + ' 👋';
+  }
+
+  renderLeaderboard();
+  renderEmployees();
+  renderHolidays();
+  renderFeedback();
+  renderTrendChart();
+  renderRegs();
+  renderCourses();
+  renderAddons();
+  renderCustomers();
+  renderTasks();
+  renderMeetings();
+  updateNavBadges();
+  renderDigest();
+  renderCrmAlerts();
+  renderResponsivenessCard();
+  renderActionCentre();
+  renderOneToOnes();
+}
+
+initApp();
+</script>
+</body>
+</html>

@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Superb — Sign in</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --ink:#1C2420; --paper:#FAF8F4; --sand:#E4DFD3; --muted:#6B6459;
+  --sage:#1F7A4D; --sage-soft:#E4F0E8; --plum:#6D3FA0; --plum-soft:#EEE6F6;
+  --danger:#C0432E; --danger-soft:#FBE9E5;
+}
+body{font-family:'Inter',sans-serif;background:var(--paper);color:var(--ink);min-height:100vh;display:flex;flex-direction:column}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:radial-gradient(circle at 1px 1px, rgba(28,36,32,.05) 1px, transparent 0);
+  background-size:22px 22px;
+  mask-image:radial-gradient(ellipse 900px 600px at 50% 30%, black 0%, transparent 75%);
+}
+
+/* TOP NAV */
+.topnav{display:flex;align-items:center;justify-content:space-between;padding:1.25rem 2rem;position:relative;z-index:1}
+.logo{display:flex;align-items:center;gap:9px;text-decoration:none}
+.logo-mark{width:30px;height:30px;border-radius:8px;background:var(--sage-soft);display:flex;align-items:center;justify-content:center;font-size:15px}
+.logo-text{font-size:15px;font-weight:600;color:var(--ink)}
+.back-link{font-size:13px;color:var(--muted);text-decoration:none;display:flex;align-items:center;gap:5px}
+.back-link:hover{color:var(--ink)}
+
+/* MAIN LAYOUT */
+.main{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:3rem 1.5rem;position:relative;z-index:1}
+.hero-tag{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:500;color:var(--sage);background:var(--sage-soft);padding:5px 12px;border-radius:20px;margin-bottom:1.25rem}
+.hero-title{font-family:'Fraunces',serif;font-size:clamp(1.9rem,4vw,2.65rem);font-weight:600;letter-spacing:-.01em;text-align:center;margin-bottom:.75rem;line-height:1.18;max-width:540px}
+.hero-sub{font-size:15px;color:var(--muted);text-align:center;margin-bottom:2.75rem;max-width:420px;line-height:1.7}
+
+/* CHOICE CARDS */
+.cards{display:flex;gap:18px;flex-wrap:wrap;justify-content:center;width:100%;max-width:720px}
+.choice-card{flex:1;min-width:270px;max-width:320px;background:#fff;border:1px solid var(--sand);border-radius:16px;padding:0;text-align:left;cursor:pointer;transition:transform .18s ease, box-shadow .18s ease;text-decoration:none;color:inherit;display:flex;flex-direction:column;overflow:hidden}
+.choice-card:hover{transform:translateY(-3px)}
+.choice-card.manager{box-shadow:0 1px 0 var(--sand)}
+.choice-card.manager:hover{box-shadow:0 14px 28px -12px rgba(109,63,160,.28)}
+.choice-card.employee:hover{box-shadow:0 14px 28px -12px rgba(31,122,77,.28)}
+.card-accent{height:5px;width:100%}
+.manager .card-accent{background:var(--plum)}
+.employee .card-accent{background:var(--sage)}
+.card-body{padding:1.75rem 1.6rem 2rem}
+.card-head{display:flex;align-items:center;gap:12px;margin-bottom:1.1rem}
+.card-icon-wrap{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:21px;flex-shrink:0}
+.manager .card-icon-wrap{background:var(--plum-soft)}
+.employee .card-icon-wrap{background:var(--sage-soft)}
+.card-title{font-family:'Fraunces',serif;font-size:19px;font-weight:600}
+.manager .card-title{color:var(--plum)}
+.employee .card-title{color:var(--sage)}
+.card-sub{font-size:13px;color:var(--muted);line-height:1.65;margin-bottom:1.5rem}
+.card-features{margin-bottom:1.75rem;display:flex;flex-direction:column;gap:7px}
+.card-feature{display:flex;align-items:flex-start;gap:8px;font-size:12.5px;color:#3A4139}
+.card-feature-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0;margin-top:6px}
+.manager .card-feature-dot{background:var(--plum)}
+.employee .card-feature-dot{background:var(--sage)}
+.card-btn{width:100%;padding:11px;border-radius:9px;border:none;font-size:13.5px;font-weight:500;cursor:pointer;font-family:'Inter',sans-serif;transition:opacity .15s}
+.manager .card-btn{background:var(--plum);color:white}
+.manager .card-btn:hover{opacity:.9}
+.employee .card-btn{background:var(--sage);color:white}
+.employee .card-btn:hover{opacity:.9}
+
+/* AUTH MODALS */
+.overlay{position:fixed;inset:0;background:rgba(20,24,20,.5);display:none;align-items:center;justify-content:center;z-index:100;padding:1rem;backdrop-filter:blur(3px)}
+.overlay.show{display:flex}
+.modal{background:#fff;border-radius:18px;padding:2rem;width:100%;max-width:420px;position:relative;animation:slideUp .2s ease}
+@keyframes slideUp{from{transform:translateY(14px);opacity:0}to{transform:none;opacity:1}}
+.modal-close{position:absolute;top:1rem;right:1rem;width:28px;height:28px;border-radius:50%;background:var(--paper);border:none;cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;color:var(--muted)}
+.modal-close:hover{background:var(--sand)}
+.modal-logo{display:flex;align-items:center;gap:8px;justify-content:center;margin-bottom:1.25rem}
+.modal-logo-icon{width:32px;height:32px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:16px}
+.modal-logo-text{font-size:15px;font-weight:600}
+.modal-title{font-family:'Fraunces',serif;font-size:20px;font-weight:600;text-align:center;margin-bottom:4px}
+.modal-sub{font-size:13px;color:var(--muted);text-align:center;margin-bottom:1.5rem}
+.tabs{display:flex;background:var(--paper);border-radius:10px;padding:4px;margin-bottom:1.5rem}
+.tab{flex:1;padding:8px;border-radius:7px;border:none;font-size:13px;font-weight:500;cursor:pointer;background:transparent;color:var(--muted);font-family:'Inter',sans-serif;transition:all .15s}
+.tab.on{background:white;color:var(--ink);box-shadow:0 1px 4px rgba(0,0,0,.08)}
+.field{margin-bottom:12px}
+.field label{font-size:12px;font-weight:500;color:#3A4139;display:block;margin-bottom:4px}
+.field input,.field select{width:100%;padding:10px 12px;border:1.5px solid var(--sand);border-radius:9px;font-size:13px;font-family:'Inter',sans-serif;background:white;transition:border-color .15s;color:var(--ink)}
+.field select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%236B6459'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center}
+.field input:focus,.field select:focus{outline:none}
+.field input:focus.manager-input,.field select:focus.manager-input{border-color:var(--plum)}
+.field input:focus.employee-input,.field select:focus.employee-input{border-color:var(--sage)}
+.submit-btn{width:100%;padding:11px;border-radius:9px;border:none;font-size:14px;font-weight:500;cursor:pointer;margin-top:4px;font-family:'Inter',sans-serif}
+.submit-btn:hover{opacity:.9}
+.manager-btn{background:var(--plum);color:white}
+.employee-btn{background:var(--sage);color:white}
+.err-msg{background:var(--danger-soft);color:var(--danger);font-size:12px;padding:8px 12px;border-radius:8px;margin-bottom:12px;display:none}
+.divider{border:none;border-top:1px solid var(--paper);margin:1rem 0}
+.modal-note{font-size:12px;color:#94a3b8;text-align:center;margin-top:.75rem}
+
+/* FOOTER */
+footer{padding:1.5rem 2rem;border-top:1px solid var(--sand);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.75rem;position:relative;z-index:1}
+.ft-copy{font-size:12px;color:#9C9484}
+.ft-links{display:flex;gap:1.5rem}
+.ft-links a{font-size:12px;color:#9C9484;text-decoration:none}
+.ft-links a:hover{color:var(--ink)}
+
+@media(max-width:560px){
+  .cards{flex-direction:column;align-items:center}
+  .choice-card{min-width:0;width:100%;max-width:100%}
+  .topnav{padding:1rem}
+}
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <a href="https://superbwellness.co.uk" class="logo">
+    <div class="logo-mark">💚</div>
+    <span class="logo-text">Superb</span>
+  </a>
+  <a href="https://superbwellness.co.uk" class="back-link">← Back to website</a>
+</nav>
+
+<div class="main">
+  <div class="hero-tag">💚 Welcome to Superb</div>
+  <h1 class="hero-title">Who's signing in today?</h1>
+  <p class="hero-sub">Pick your role below and we'll take you straight to the right app.</p>
+
+  <div class="cards">
+
+    <!-- MANAGER CARD -->
+    <div class="choice-card manager" onclick="openModal('manager')">
+      <div class="card-accent"></div>
+      <div class="card-body">
+        <div class="card-head">
+          <div class="card-icon-wrap">🏢</div>
+          <div class="card-title">Manager</div>
+        </div>
+        <p class="card-sub">I manage a team and want to see how my employees and customer relationships are doing.</p>
+        <div class="card-features">
+          <div class="card-feature"><div class="card-feature-dot"></div>Team mood dashboard</div>
+          <div class="card-feature"><div class="card-feature-dot"></div>Anonymous feedback inbox</div>
+          <div class="card-feature"><div class="card-feature-dot"></div>Holiday approvals</div>
+          <div class="card-feature"><div class="card-feature-dot"></div>Customer relationships overview</div>
+          <div class="card-feature"><div class="card-feature-dot"></div>Regulations and courses</div>
+        </div>
+        <button class="card-btn">Sign in as Manager</button>
+      </div>
+    </div>
+
+    <!-- EMPLOYEE CARD -->
+    <div class="choice-card employee" onclick="openModal('employee')">
+      <div class="card-accent"></div>
+      <div class="card-body">
+        <div class="card-head">
+          <div class="card-icon-wrap">💚</div>
+          <div class="card-title">Employee</div>
+        </div>
+        <p class="card-sub">I am a team member and want to check in, send feedback, and manage my customers if I have any.</p>
+        <div class="card-features">
+          <div class="card-feature"><div class="card-feature-dot"></div>Weekly mood check-in</div>
+          <div class="card-feature"><div class="card-feature-dot"></div>Anonymous mail centre</div>
+          <div class="card-feature"><div class="card-feature-dot"></div>Holiday requests</div>
+          <div class="card-feature"><div class="card-feature-dot"></div>Customer profiles & meetings <span style="color:#9C9484;font-weight:400">— for sales &amp; account roles</span></div>
+          <div class="card-feature"><div class="card-feature-dot"></div>Wellbeing resources and EAP</div>
+        </div>
+        <button class="card-btn">Sign in as Employee</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<footer>
+  <div class="ft-copy">© 2026 Superb Wellness · Based in Scotland</div>
+  <div class="ft-links">
+    <a href="privacy.html">Privacy</a>
+    <a href="terms.html">Terms</a>
+    <a href="mailto:hello@superbwellness.co.uk">Help</a>
+  </div>
+</footer>
+
+<!-- MANAGER MODAL -->
+<div class="overlay" id="manager-modal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('manager-modal')">✕</button>
+    <div class="modal-logo">
+      <div class="modal-logo-icon" style="background:var(--plum-soft)">🏢</div>
+      <span class="modal-logo-text" style="color:var(--plum)">Superb Manager</span>
+    </div>
+    <div class="tabs">
+      <button class="tab on" id="mgr-tab-login" onclick="mgrTab('login')">Log in</button>
+      <button class="tab" id="mgr-tab-signup" onclick="mgrTab('signup')">Create workspace</button>
+    </div>
+
+    <div id="mgr-login">
+      <div class="modal-title">Welcome back</div>
+      <div class="modal-sub">Log in to your manager dashboard</div>
+      <div class="err-msg" id="mgr-li-err"></div>
+      <div class="field"><label>Email</label><input type="email" id="mgr-li-em" class="manager-input" placeholder="sarah@company.co.uk"></div>
+      <div class="field"><label>Password</label><input type="password" id="mgr-li-pw" class="manager-input" placeholder="Your password"></div>
+      <button class="submit-btn manager-btn" onclick="mgrLogin()">Log in</button>
+      <div class="modal-note">Don't have an account? <a href="#" onclick="mgrTab('signup');return false;" style="color:var(--plum)">Create a workspace</a></div>
+    </div>
+
+    <div id="mgr-signup" style="display:none">
+      <div class="modal-title">Create your workspace</div>
+      <div class="modal-sub">Set up your company in under a minute</div>
+      <div class="err-msg" id="mgr-su-err"></div>
+      <div class="field"><label>Company name</label><input type="text" id="mgr-su-co" class="manager-input" placeholder="Acme Ltd"></div>
+      <div class="field"><label>Your name</label><input type="text" id="mgr-su-nm" class="manager-input" placeholder="Sarah Johnson"></div>
+      <div class="field"><label>Email</label><input type="email" id="mgr-su-em" class="manager-input" placeholder="sarah@company.co.uk"></div>
+      <div class="field"><label>Password (6+ characters)</label><input type="password" id="mgr-su-pw" class="manager-input"></div>
+      <button class="submit-btn manager-btn" onclick="mgrSignup()">Create workspace</button>
+      <div class="modal-note">Already have an account? <a href="#" onclick="mgrTab('login');return false;" style="color:var(--plum)">Log in</a></div>
+    </div>
+  </div>
+</div>
+
+<!-- EMPLOYEE MODAL -->
+<div class="overlay" id="employee-modal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('employee-modal')">✕</button>
+    <div class="modal-logo">
+      <div class="modal-logo-icon" style="background:var(--sage-soft)">💚</div>
+      <span class="modal-logo-text" style="color:var(--sage)">Superb Employee</span>
+    </div>
+    <div class="tabs">
+      <button class="tab on" id="emp-tab-join" onclick="empTab('join')">Join a company</button>
+      <button class="tab" id="emp-tab-return" onclick="empTab('return')">Returning user</button>
+    </div>
+
+    <!-- EMPLOYEE JOIN -->
+    <div id="emp-join">
+      <div class="modal-title">Join your company</div>
+      <div class="modal-sub">Enter the code your manager shared with you</div>
+      <div class="err-msg" id="emp-join-err"></div>
+      <div class="field"><label>Your name</label><input type="text" id="emp-nm" class="employee-input" placeholder="Alex Morgan"></div>
+      <div class="field"><label>Your role</label>
+        <select id="emp-role" class="employee-input">
+          <option value="">Select your role</option>
+          <option value="Sales">Sales</option>
+          <option value="Account Management">Account Management</option>
+          <option value="Customer Success">Customer Success</option>
+          <option value="HR">HR</option>
+          <option value="Marketing">Marketing</option>
+          <option value="Operations">Operations</option>
+          <option value="Finance">Finance</option>
+          <option value="Engineering">Engineering</option>
+          <option value="Design">Design</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+      <div class="field"><label>Company code</label><input type="text" id="emp-code" class="employee-input" placeholder="ACME-7842" style="text-transform:uppercase;letter-spacing:.1em;font-family:monospace;font-size:16px"></div>
+      <button class="submit-btn employee-btn" onclick="empJoin()">Join and open app</button>
+      <div class="modal-note">Already joined before? <a href="#" onclick="empTab('return');return false;" style="color:var(--sage)">Use returning user</a></div>
+    </div>
+
+    <!-- EMPLOYEE RETURNING -->
+    <div id="emp-return" style="display:none">
+      <div class="modal-title">Welcome back</div>
+      <div class="modal-sub">Enter your name and company code to continue</div>
+      <div class="err-msg" id="emp-ret-err"></div>
+      <div class="field"><label>Your name</label><input type="text" id="emp-ret-nm" class="employee-input" placeholder="Alex Morgan"></div>
+      <div class="field"><label>Company code</label><input type="text" id="emp-ret-code" class="employee-input" placeholder="ACME-7842" style="text-transform:uppercase;letter-spacing:.1em;font-family:monospace;font-size:16px"></div>
+      <button class="submit-btn employee-btn" onclick="empReturn()">Open my app</button>
+      <div class="modal-note">First time here? <a href="#" onclick="empTab('join');return false;" style="color:var(--sage)">Join a company</a></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================
+// CONFIGURATION
+// Change these URLs once your apps are deployed
+// ============================================
+var MANAGER_APP_URL = 'manager.html';   // e.g. https://manager.superbwellness.co.uk
+var EMPLOYEE_APP_URL = 'employee.html'; // e.g. https://employee.superbwellness.co.uk
+
+// ============================================================
+// SUPERB_CONFIG — must match manager.html and employee.html
+// exactly (same DEMO_MODE, same Supabase project). This is the
+// piece that was missing: portal.html never actually created or
+// looked up a company in Supabase — it just stashed form data in
+// localStorage under keys manager.html's resolveSession() never
+// read, so a real sign-up would dead-end back here. Fixed below.
+// ============================================================
+var SUPERB_CONFIG = {
+  DEMO_MODE: true,
+  SUPABASE_URL: "YOUR_SUPABASE_URL",
+  SUPABASE_ANON_KEY: "YOUR_SUPABASE_ANON_KEY"
+};
+var sb = null;
+if (!SUPERB_CONFIG.DEMO_MODE) {
+  if (SUPERB_CONFIG.SUPABASE_URL === "YOUR_SUPABASE_URL") {
+    console.error("SUPERB_CONFIG.DEMO_MODE is false but Supabase credentials were never filled in — falling back to demo behaviour.");
+    SUPERB_CONFIG.DEMO_MODE = true;
+  } else {
+    sb = window.supabase.createClient(SUPERB_CONFIG.SUPABASE_URL, SUPERB_CONFIG.SUPABASE_ANON_KEY);
+  }
+}
+
+function generateJoinCode(companyName) {
+  var prefix = companyName.replace(/[^A-Za-z]/g, '').toUpperCase().slice(0, 4) || 'TEAM';
+  var num = Math.floor(1000 + Math.random() * 9000);
+  return prefix + '-' + num;
+}
+
+// Roles that unlock the Relationships (CRM) section inside Superb Employee
+var REP_ROLES = ['Sales', 'Account Management', 'Customer Success'];
+
+function openModal(type) {
+  document.getElementById(type + '-modal').classList.add('show');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal(id) {
+  document.getElementById(id).classList.remove('show');
+  document.body.style.overflow = '';
+}
+
+document.querySelectorAll('.overlay').forEach(function(o) {
+  o.addEventListener('click', function(e) {
+    if (e.target === o) closeModal(o.id);
+  });
+});
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    document.querySelectorAll('.overlay.show').forEach(function(o) {
+      closeModal(o.id);
+    });
+  }
+});
+
+function mgrTab(tab) {
+  document.getElementById('mgr-login').style.display = tab === 'login' ? 'block' : 'none';
+  document.getElementById('mgr-signup').style.display = tab === 'signup' ? 'block' : 'none';
+  document.getElementById('mgr-tab-login').classList.toggle('on', tab === 'login');
+  document.getElementById('mgr-tab-signup').classList.toggle('on', tab === 'signup');
+}
+
+function empTab(tab) {
+  document.getElementById('emp-join').style.display = tab === 'join' ? 'block' : 'none';
+  document.getElementById('emp-return').style.display = tab === 'return' ? 'block' : 'none';
+  document.getElementById('emp-tab-join').classList.toggle('on', tab === 'join');
+  document.getElementById('emp-tab-return').classList.toggle('on', tab === 'return');
+}
+
+function showErr(id, msg) {
+  var el = document.getElementById(id);
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+
+function hideErr(id) {
+  document.getElementById(id).style.display = 'none';
+}
+
+async function mgrLogin() {
+  var em = document.getElementById('mgr-li-em').value.trim();
+  var pw = document.getElementById('mgr-li-pw').value;
+  hideErr('mgr-li-err');
+  if (!em || !pw) { showErr('mgr-li-err', 'Please enter your email and password.'); return; }
+
+  if (SUPERB_CONFIG.DEMO_MODE) {
+    localStorage.setItem('mgr_login_email', em);
+    localStorage.setItem('mgr_action', 'login');
+    window.location.href = MANAGER_APP_URL;
+    return;
+  }
+
+  // NOTE: this looks up by email only — there is no real password check
+  // here (matching index.html's existing simplified auth). Proper
+  // Supabase Auth with real password verification should replace this
+  // before a genuine public launch; tracked in LAUNCH_CHECKLIST.md.
+  var { data, error } = await sb.from('companies').select('*').eq('manager_email', em).single();
+  if (error || !data) {
+    showErr('mgr-li-err', 'No workspace found with that email.');
+    return;
+  }
+  localStorage.setItem('superb_company_id', data.id);
+  window.location.href = MANAGER_APP_URL;
+}
+
+async function mgrSignup() {
+  var co = document.getElementById('mgr-su-co').value.trim();
+  var nm = document.getElementById('mgr-su-nm').value.trim();
+  var em = document.getElementById('mgr-su-em').value.trim();
+  var pw = document.getElementById('mgr-su-pw').value;
+  hideErr('mgr-su-err');
+  if (!co || !nm || !em || pw.length < 6) {
+    showErr('mgr-su-err', 'Please fill in all fields. Password must be at least 6 characters.');
+    return;
+  }
+
+  if (SUPERB_CONFIG.DEMO_MODE) {
+    localStorage.setItem('mgr_signup_data', JSON.stringify({ company: co, name: nm, email: em }));
+    localStorage.setItem('mgr_action', 'signup');
+    window.location.href = MANAGER_APP_URL;
+    return;
+  }
+
+  var joinCode = generateJoinCode(co);
+  var { data, error } = await sb.from('companies')
+    .insert([{ name: co, manager_name: nm, manager_email: em, join_code: joinCode }])
+    .select().single();
+  if (error) {
+    showErr('mgr-su-err', 'Something went wrong: ' + error.message);
+    return;
+  }
+  localStorage.setItem('superb_company_id', data.id);
+  window.location.href = MANAGER_APP_URL;
+}
+
+function empJoin() {
+  var nm = document.getElementById('emp-nm').value.trim();
+  var role = document.getElementById('emp-role').value;
+  var code = document.getElementById('emp-code').value.trim().toUpperCase();
+  hideErr('emp-join-err');
+  if (!nm || !role || !code) { showErr('emp-join-err', 'Please enter your name, role, and the company code.'); return; }
+  var isRep = REP_ROLES.indexOf(role) > -1;
+  localStorage.setItem('emp_join_data', JSON.stringify({ name: nm, role: role, code: code, isRep: isRep }));
+  localStorage.setItem('emp_action', 'join');
+  window.location.href = EMPLOYEE_APP_URL;
+}
+
+function empReturn() {
+  var nm = document.getElementById('emp-ret-nm').value.trim();
+  var code = document.getElementById('emp-ret-code').value.trim().toUpperCase();
+  hideErr('emp-ret-err');
+  if (!nm || !code) { showErr('emp-ret-err', 'Please enter your name and company code.'); return; }
+  localStorage.setItem('emp_return_data', JSON.stringify({ name: nm, code: code }));
+  localStorage.setItem('emp_action', 'return');
+  window.location.href = EMPLOYEE_APP_URL;
+}
+</script>
+
+</body>
+</html>
